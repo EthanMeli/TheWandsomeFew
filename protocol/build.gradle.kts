@@ -1,0 +1,1 @@
+// Shared protocol types (packets, codecs, serialization)
