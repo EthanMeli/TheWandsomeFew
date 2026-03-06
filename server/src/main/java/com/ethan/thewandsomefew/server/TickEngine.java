@@ -15,6 +15,11 @@ public final class TickEngine implements Runnable {
     running = false;
   }
 
+  /**
+   * Game Tick System for Server
+   * Compute NextTickTime based on currentTimeMillis
+   * Update every time tickMillis (600ms)
+   */
   @Override
   public void run() {
     long nextTickTime = System.currentTimeMillis();
@@ -34,5 +39,4 @@ public final class TickEngine implements Runnable {
       }
     }
   }
-
 }
