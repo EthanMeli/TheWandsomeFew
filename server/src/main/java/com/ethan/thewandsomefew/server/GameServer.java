@@ -24,6 +24,10 @@ public final class GameServer {
     try (ServerSocket serverSocket = new ServerSocket(port)) {
       System.out.println("Server listening on " + port);
 
+      TickEngine tickEngine = new TickEngine(600, () -> {
+        System.out.println("Tick");
+      });
+      new Thread(tickEngine, "tick-engine").start();
       try (Socket socket = serverSocket.accept()) {
         System.out.println("Client connected: " + socket.getRemoteSocketAddress());
 
@@ -33,7 +37,7 @@ public final class GameServer {
         if (inPacket instanceof HelloPacket helloPacket) {
           System.out.println("Protocol Version: " + helloPacket.protocolVersion());
         } else {
-          System.out.println("Packet Type: " + inPacket.id().toString());
+          if (inPacket != null) System.out.println("Packet Type: " + inPacket.id().toString());
         }
       }
     }
