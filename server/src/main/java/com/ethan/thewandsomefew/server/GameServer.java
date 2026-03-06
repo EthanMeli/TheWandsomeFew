@@ -29,9 +29,9 @@ public final class GameServer {
 
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
         Packet inPacket = codec.readPacket(in);
-        
+
         if (inPacket instanceof HelloPacket helloPacket) {
-          System.out.println("Protcol Version: " + helloPacket.protocolVersion());
+          System.out.println("Protocol Version: " + helloPacket.protocolVersion());
         } else {
           System.out.println("Packet Type: " + inPacket.id().toString());
         }
