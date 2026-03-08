@@ -1,6 +1,6 @@
 # Architecture Diagram
 
-This diagram shows the current and planned high-level architecture of the projec.
+This diagram shows the current and planned high-level architecture of the project.
 
 ## High-Level System Architecture
 
