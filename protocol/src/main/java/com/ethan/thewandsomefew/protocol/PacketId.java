@@ -1,9 +1,28 @@
+/**
+ * File: PacketId.java
+ * Module: protocol
+ * Authored By: Ethan Meli
+ * Created: 3/4/2026
+ * Last Modified: 3/8/2026
+ * 
+ * Purpose:
+ *   This file is responsible for defining the PacketId Enum,
+ *   centralizing the identification of different Packet Types.
+ *   Centralized IDs prevent client/server mismatches.
+ * 
+ * Resposibilities:
+ *   - Define existing and new packet types
+ */
+
 package com.ethan.thewandsomefew.protocol;
 
 /**
- * Central registry of packet IDs.
+ * Central registry of packet IDs
  * 
- * Keeping IDs in one place prevents client/server mismatches
+ * <p>Responsibilites:
+ * <ul>
+ *    <li>Define existing and new packet types</li>
+ * </ul>
  */
 public enum PacketId {
   HELLO(1),

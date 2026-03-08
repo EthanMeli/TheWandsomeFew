@@ -1,3 +1,22 @@
+/**
+ * File: ProtocolSmokeTest.java
+ * Module: protocol
+ * Authored By: Ethan Meli
+ * Created: 3/4/2026
+ * Last Modified: 3/8/2026
+ * 
+ * Purpose:
+ *   The purpose of this file is to test the Hello Packet
+ *   functionality, as well as basic Packet Codec functions.
+ * 
+ * Resposibilities:
+ *   - Ensure Hello Packet is properly tested using Packet Codec
+ * 
+ * Notes:
+ *   - Used initially for testing protocol versions
+ *   - May be expaned upon or deleted in the future
+ */
+
 package com.ethan.thewandsomefew.protocol;
 
 import java.io.ByteArrayInputStream;
