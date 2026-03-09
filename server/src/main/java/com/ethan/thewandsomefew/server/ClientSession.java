@@ -17,6 +17,7 @@
  * 
  * Notes:
  *   - Currently very simple: connects to the client and reads a sent Hello Packet (protocol version).
+ *     Interprets a read click to walk packet and calls the corresponding world player action.
  *     Then disconnects and cleans up the client's disconnection.
  */
 
@@ -46,6 +47,7 @@ public final class ClientSession implements Runnable {
   
   private final Socket socket;
   private final PacketCodec codec;
+  private final World world;
   private final DataInputStream in;
   private volatile boolean running = true;
 
@@ -54,11 +56,13 @@ public final class ClientSession implements Runnable {
    *
    * @param socket represents the networking component connecting client sessions to the game server
    * @param codec is used to encode/decode packets for efficient and consistent data exchange with the game server
+   * @param world represents the world state and provides world tick actions
    * @throws IOException if the socket was created incorrectly or the DataInputStream fails to be created (this.in)
    */
-  public ClientSession(Socket socket, PacketCodec codec) throws IOException {
+  public ClientSession(Socket socket, PacketCodec codec, World world) throws IOException {
     this.socket = socket;
     this.codec = codec;
+    this.world = world;
     this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
   }
 
@@ -81,16 +85,17 @@ public final class ClientSession implements Runnable {
     System.out.println("Session started for " + socket.getRemoteSocketAddress());
 
     try {
-        while (running) {
-          Packet packet = codec.readPacket(in);
-          if (packet instanceof HelloPacket helloPacket) {
-            System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
-          } else if (packet instanceof ClickToWalkPacket clickToWalkPacket) {
-            System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
-          } else {
-            System.out.println(" Received Packet Type: " + packet.getClass().getSimpleName());
-          }
+      while (running) {
+        Packet packet = codec.readPacket(in);
+        if (packet instanceof HelloPacket helloPacket) {
+          System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
+        } else if (packet instanceof ClickToWalkPacket clickToWalkPacket) {
+          System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
+          world.player().setWalkTarget(clickToWalkPacket.x(), clickToWalkPacket.y());
+        } else {
+          System.out.println(" Received Packet Type: " + packet.getClass().getSimpleName());
         }
+      }
     } catch (IOException e) {
       System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
     } finally {

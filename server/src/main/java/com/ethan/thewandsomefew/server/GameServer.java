@@ -49,9 +49,11 @@ public final class GameServer {
   public static void main(String[] args) throws Exception {
     int port = 43594;
     PacketCodec codec = new PacketCodec();
+    World world = new World();
 
     TickEngine tickEngine = new TickEngine(600, () -> {
       System.out.println("Tick");
+      world.tick();
     });
     new Thread(tickEngine, "tick-engine").start();
 
@@ -60,7 +62,7 @@ public final class GameServer {
 
       while (true) { 
           Socket socket = serverSocket.accept();
-          ClientSession clientSession = new ClientSession(socket, codec);
+          ClientSession clientSession = new ClientSession(socket, codec, world);
           new Thread(clientSession, "client-" + socket.getPort()).start();
       }
     }
