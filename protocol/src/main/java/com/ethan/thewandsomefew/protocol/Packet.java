@@ -11,7 +11,7 @@
  *   packet types to be created with custom read and write methods for
  *   data exchange between a Client Session and the Game Server.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Define Packet template for different packet types' information 
  *     exchange between clients and game server
  * 

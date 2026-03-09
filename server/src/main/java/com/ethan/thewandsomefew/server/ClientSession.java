@@ -10,7 +10,7 @@
  *   client sessions, acting as the primary communication between
  *   clients and the game server.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Handle information exchange for individual clients with the game server
  *   - Creates an independent thread for client sessions to divide logic to be
  *     handled for the game server
@@ -27,15 +27,16 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import com.ethan.thewandsomefew.protocol.HelloPacket;
 import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
+import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
+import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 
 /**
  * The ClientSession class handles the packet exchange between individual clients and the game server
  * on the server side.
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Create an independent thread for individual clients</li>
  *    <li>Create data stream between individual clients and the game server</li>
@@ -83,7 +84,9 @@ public final class ClientSession implements Runnable {
         while (running) {
           Packet packet = codec.readPacket(in);
           if (packet instanceof HelloPacket helloPacket) {
-            System.out.println("Protocol Version: " + helloPacket.protocolVersion());
+            System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
+          } else if (packet instanceof ClickToWalkPacket clickToWalkPacket) {
+            System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
           } else {
             System.out.println(" Received Packet Type: " + packet.getClass().getSimpleName());
           }

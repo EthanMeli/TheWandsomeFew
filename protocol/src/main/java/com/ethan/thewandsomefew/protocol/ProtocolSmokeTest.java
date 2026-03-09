@@ -9,7 +9,7 @@
  *   The purpose of this file is to test the Hello Packet
  *   functionality, as well as basic Packet Codec functions.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Ensure Hello Packet is properly tested using Packet Codec
  * 
  * Notes:
@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+
+import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 
 public final class ProtocolSmokeTest {
   

@@ -7,10 +7,10 @@
  * 
  * Purpose:
  *   This file is responsible for defining the PacketCodec class.
- *   The primary use is to encode and ecode packet information
+ *   The primary use is to encode and decode packet information
  *   for consistent data exchange between client and game server.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Encode packet information from client consistently across packet types and write to server
  *   - Decode packet information consistently across packet types when server received packet
  * 
@@ -27,10 +27,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
+import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+
 /**
  * The PacketCodec class encodes and decodes packets on a binary stream.
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Encode information from client input and write to server</li>
  *    <li>Decode packet sent from client to server for proper handling</li>
@@ -55,6 +58,7 @@ public final class PacketCodec {
    */
   public PacketCodec() {
     register(PacketId.HELLO, HelloPacket::read);
+    register(PacketId.CLICK_TO_WALK, ClickToWalkPacket::read);
   }
 
   /**

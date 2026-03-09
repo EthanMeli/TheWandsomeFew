@@ -9,7 +9,7 @@
  *   This file is responsible for defining the tick engine loop
  *   utilized by the server.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Create a consistent tick loop to define timing of information exchange
  *     between clients and the server
  */
@@ -20,7 +20,7 @@ package com.ethan.thewandsomefew.server;
  * The TickEngine class defines the timing for information exchange between
  * clients and the server.
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Create a consistent tick loop for packet exchange</li>
  * </ul>

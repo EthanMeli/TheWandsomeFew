@@ -10,7 +10,7 @@
  *   centralizing the identification of different Packet Types.
  *   Centralized IDs prevent client/server mismatches.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Define existing and new packet types
  */
 
@@ -19,7 +19,7 @@ package com.ethan.thewandsomefew.protocol;
 /**
  * Central registry of packet IDs
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Define existing and new packet types</li>
  * </ul>

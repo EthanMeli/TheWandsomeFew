@@ -10,7 +10,7 @@
  *   running the main tick engine, establishing a server socket gateway, and
  *   creating, connecting, and processing client sessions.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Run Tick Engine loop
  *   - Establish Server Socket gateway for client connections
  *   - Create, connect, and process client sessions on independent threads
@@ -32,7 +32,7 @@ import com.ethan.thewandsomefew.protocol.PacketCodec;
  * a network gateway for client sessions, as well as creating independent threads for
  * individual client sessions.
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Run Tick Engine loop</li>
  *    <li>Establish Server Socket gateway for client connections</li>

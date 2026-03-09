@@ -9,7 +9,7 @@
  *   This file is responsible for defining the logic for Game Clients,
  *   handling user input, and writing relevant packets to the game server.
  * 
- * Resposibilities:
+ * Responsibilities:
  *   - Connect users to the game server
  *   - Handle user interaction with the client
  *   - Send data to the game server
@@ -24,14 +24,15 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 
-import com.ethan.thewandsomefew.protocol.HelloPacket;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
+import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
+import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 
 /**
  * The GameClient class handles the packet exchange between individual clients and the game server
  * on the client side.
  * 
- * <p>Responsibilites:
+ * <p>Responsibilities:
  * <ul>
  *    <li>Connect users to the game server</li>
  *    <li>Handle user interaction with the client</li>
@@ -56,6 +57,9 @@ public final class GameClient {
 
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       codec.writePacket(out, new HelloPacket(258));
+      out.flush();
+
+      codec.writePacket(out, new ClickToWalkPacket(10, 15));
       out.flush();
     }
   }
