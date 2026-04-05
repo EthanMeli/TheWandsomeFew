@@ -14,6 +14,9 @@
 package com.ethan.thewandsomefew.server;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
@@ -34,34 +37,40 @@ import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
  * </ul>
  */
 public final class World {
-  private final Player player;
-  private ClientSession client;
+  private Map<ClientSession, ConnectedPlayer> map;
+  private static final AtomicInteger nextId = new AtomicInteger(0);
 
   public World() {
-    this.player = new Player(0, 0);
+    map = new HashMap<>();
   }
 
-  public Player player() {
-    return player;
+  public void connectPlayer(ClientSession client) {
+    map.put(client, new ConnectedPlayer(nextId.incrementAndGet(), new Player(0, 0), client));
   }
 
-  public void updateClient(ClientSession client) {
-    this.client = client;
+  public void disconnectPlayer(ClientSession client) {
+    map.remove(client);
+  }
+
+  public Player getPlayerFromClient(ClientSession client) {
+    return map.get(client).player();
   }
 
   // tick() currently only updates and logs player movement towards a target position,
   // but will need to be expanded upon when new actions and entities are introduced
   // to the World
   public void tick() {
-    player.tickMovement();
-    if (client != null) {
-      try {
-        client.sendPacket(new PlayerPositionPacket(player.x(), player.y()));
-      } catch (IOException e) {
-        System.out.println("Error sending player position to client: " + e.getMessage());
-        e.printStackTrace();
+    map.forEach((client, connectedPlayer) -> {
+      if (client != null) {
+        connectedPlayer.player().tickMovement();
+        try {
+          client.sendPacket(new PlayerPositionPacket(connectedPlayer.player().x(), connectedPlayer.player().y()));
+        } catch (IOException e) {
+          System.out.println("Error sending player position to client: " + e.getMessage());
+          e.printStackTrace();
+        }
+        System.out.println("Player " + connectedPlayer.id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
       }
-    }
-    System.out.println("Player Position: x=" + player.x() + ", y=" + player.y());
+    });
   }
 }

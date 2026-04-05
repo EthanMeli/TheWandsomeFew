@@ -61,10 +61,10 @@ public final class GameServer {
       System.out.println("Server listening on " + port);
 
       while (true) { 
-          Socket socket = serverSocket.accept();
-          ClientSession clientSession = new ClientSession(socket, codec, world);
-          world.updateClient(clientSession);
-          new Thread(clientSession, "client-" + socket.getPort()).start();
+        Socket socket = serverSocket.accept();
+        ClientSession clientSession = new ClientSession(socket, codec, world);
+        world.connectPlayer(clientSession);
+        new Thread(clientSession, "client-" + socket.getPort()).start();
       }
     }
   }
