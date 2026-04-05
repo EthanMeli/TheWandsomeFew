@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/4/2026
  * 
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -12,6 +12,10 @@
  */
 
 package com.ethan.thewandsomefew.server;
+
+import java.io.IOException;
+
+import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
 /**
  * The World class defines and tracks the current World state, performing
@@ -31,13 +35,18 @@ package com.ethan.thewandsomefew.server;
  */
 public final class World {
   private final Player player;
+  private ClientSession client;
 
   public World() {
-    player = new Player(0, 0);
+    this.player = new Player(0, 0);
   }
 
   public Player player() {
     return player;
+  }
+
+  public void updateClient(ClientSession client) {
+    this.client = client;
   }
 
   // tick() currently only updates and logs player movement towards a target position,
@@ -45,6 +54,14 @@ public final class World {
   // to the World
   public void tick() {
     player.tickMovement();
+    if (client != null) {
+      try {
+        client.sendPacket(new PlayerPositionPacket(player.x(), player.y()));
+      } catch (IOException e) {
+        System.out.println("Error sending player position to client: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
     System.out.println("Player Position: x=" + player.x() + ", y=" + player.y());
   }
 }

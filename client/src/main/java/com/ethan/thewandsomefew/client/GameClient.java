@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 3/5/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/4/2026
  * 
  * Purpose:
  *   This file is responsible for defining the logic for Game Clients,
@@ -20,13 +20,17 @@
 
 package com.ethan.thewandsomefew.client;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 
+import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
 /**
  * The GameClient class handles the packet exchange between individual clients and the game server
@@ -61,6 +65,16 @@ public final class GameClient {
 
       codec.writePacket(out, new ClickToWalkPacket(10, 15));
       out.flush();
+
+      DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+
+      while (true) { 
+        Packet packet = codec.readPacket(in);
+
+        if (packet instanceof PlayerPositionPacket playerPosPacket) {
+          System.out.println("Player Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
+        }
+      }
     }
   }
 }

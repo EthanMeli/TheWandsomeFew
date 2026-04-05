@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 3/4/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/4/2026
  * 
  * Purpose:
  *   This file is responsible for defining the PacketCodec class.
@@ -29,6 +29,7 @@ import java.util.Map;
 
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
 /**
  * The PacketCodec class encodes and decodes packets on a binary stream.
@@ -59,6 +60,7 @@ public final class PacketCodec {
   public PacketCodec() {
     register(PacketId.HELLO, HelloPacket::read);
     register(PacketId.CLICK_TO_WALK, ClickToWalkPacket::read);
+    register(PacketId.PLAYER_POS, PlayerPositionPacket::read);
   }
 
   /**

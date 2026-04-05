@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/4/2026
  * 
  * Purpose:
  *   This file is responsible for defining the logic for individual
@@ -24,7 +24,9 @@
 package com.ethan.thewandsomefew.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -49,6 +51,7 @@ public final class ClientSession implements Runnable {
   private final PacketCodec codec;
   private final World world;
   private final DataInputStream in;
+  private final DataOutputStream out;
   private volatile boolean running = true;
 
   /**
@@ -64,10 +67,22 @@ public final class ClientSession implements Runnable {
     this.codec = codec;
     this.world = world;
     this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+    this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
   }
 
   public void stop() {
     running = false;
+  }
+
+  /**
+   * Sends a packet to this session's client.
+   *
+   * @param packet the packet to send
+   * @throws IOException if the stream cannot be written to
+   */
+  public void sendPacket(Packet packet) throws IOException {
+    codec.writePacket(out, packet);
+    out.flush();
   }
 
   /**
@@ -109,6 +124,7 @@ public final class ClientSession implements Runnable {
           e.printStackTrace();
         }
       }
+      world.updateClient(null);
     }
   }
 }
