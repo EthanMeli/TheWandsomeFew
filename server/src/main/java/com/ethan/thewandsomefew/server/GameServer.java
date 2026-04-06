@@ -63,7 +63,7 @@ public final class GameServer {
       while (true) { 
         Socket socket = serverSocket.accept();
         ClientSession clientSession = new ClientSession(socket, codec, world);
-        world.connectPlayer(clientSession);
+        world.submitAction(new PlayerAction.Connect(clientSession, new Player(0, 0)));
         new Thread(clientSession, "client-" + socket.getPort()).start();
       }
     }

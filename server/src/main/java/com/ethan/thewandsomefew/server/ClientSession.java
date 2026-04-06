@@ -106,7 +106,7 @@ public final class ClientSession implements Runnable {
           System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
         } else if (packet instanceof ClickToWalkPacket clickToWalkPacket) {
           System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
-          world.getPlayerFromClient(this).setWalkTarget(clickToWalkPacket.x(), clickToWalkPacket.y());
+          world.submitAction(new PlayerAction.Walk(this, clickToWalkPacket.x(), clickToWalkPacket.y()));
         } else {
           System.out.println(" Received Packet Type: " + packet.getClass().getSimpleName());
         }
@@ -124,7 +124,7 @@ public final class ClientSession implements Runnable {
           e.printStackTrace();
         }
       }
-      world.disconnectPlayer(this);
+      world.submitAction(new PlayerAction.Disconnect(this));
     }
   }
 }

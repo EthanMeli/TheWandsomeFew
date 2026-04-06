@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/6/2026
  * 
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -16,6 +16,7 @@ package com.ethan.thewandsomefew.server;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
@@ -37,29 +38,51 @@ import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
  * </ul>
  */
 public final class World {
+  private ConcurrentLinkedQueue<PlayerAction> actions;
   private Map<ClientSession, ConnectedPlayer> map;
   private static final AtomicInteger nextId = new AtomicInteger(0);
 
   public World() {
+    actions = new ConcurrentLinkedQueue<>();
     map = new HashMap<>();
   }
 
-  public void connectPlayer(ClientSession client) {
-    map.put(client, new ConnectedPlayer(nextId.incrementAndGet(), new Player(0, 0), client));
+  private void connectPlayer(ClientSession client, Player player) {
+    map.put(client, new ConnectedPlayer(nextId.incrementAndGet(), player, client));
   }
 
-  public void disconnectPlayer(ClientSession client) {
+  private void disconnectPlayer(ClientSession client) {
     map.remove(client);
   }
 
-  public Player getPlayerFromClient(ClientSession client) {
+  private Player getPlayerFromClient(ClientSession client) {
     return map.get(client).player();
+  }
+
+  public void submitAction(PlayerAction action) {
+    actions.add(action);
+  }
+
+  private void processActions() {
+    PlayerAction action;
+    while ((action = actions.poll()) != null) {
+      switch (action) {
+        case PlayerAction.Connect(ClientSession client, Player player) ->
+          connectPlayer(client, player);
+        case PlayerAction.Disconnect(ClientSession client) ->
+          disconnectPlayer(client);
+        case PlayerAction.Walk(ClientSession client, int x, int y) ->
+          getPlayerFromClient(client).setWalkTarget(x, y);
+      }
+    }
   }
 
   // tick() currently only updates and logs player movement towards a target position,
   // but will need to be expanded upon when new actions and entities are introduced
   // to the World
   public void tick() {
+    processActions();
+
     map.forEach((client, connectedPlayer) -> {
       if (client != null) {
         connectedPlayer.player().tickMovement();
