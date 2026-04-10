@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/6/2026
+ * Last Modified: 4/9/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -41,8 +41,8 @@ import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
  */
 public final class World {
 
-    private ConcurrentLinkedQueue<PlayerAction> actions;
-    private Map<ClientSession, ConnectedPlayer> map;
+    private final ConcurrentLinkedQueue<PlayerAction> actions;
+    private final Map<ClientSession, ConnectedPlayer> map;
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
     public World() {
@@ -92,8 +92,9 @@ public final class World {
                 try {
                     client.sendPacket(new PlayerPositionPacket(connectedPlayer.player().x(), connectedPlayer.player().y()));
                 } catch (IOException e) {
-                    System.out.println("Error sending player position to client: " + e.getMessage());
+                    System.err.println("Error sending player position to client: " + e.getMessage());
                     e.printStackTrace();
+                    submitAction(new PlayerAction.Disconnect(client));
                 }
                 System.out.println("Player " + connectedPlayer.id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
             }

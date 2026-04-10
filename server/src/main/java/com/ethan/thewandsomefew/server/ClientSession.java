@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/9/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for individual
@@ -110,23 +110,23 @@ public final class ClientSession implements Runnable {
                     System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
                     world.submitAction(new PlayerAction.Walk(this, clickToWalkPacket.x(), clickToWalkPacket.y()));
                 } else {
-                    System.out.println(" Received Packet Type: " + packet.getClass().getSimpleName());
+                    System.out.println("Received Packet Type: " + packet.getClass().getSimpleName());
                 }
             }
         } catch (IOException e) {
+            System.out.println("=== Client Session Cleanup ===");
             System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
         } finally {
-            System.out.println("=== Client Session Cleanup ===");
+            world.submitAction(new PlayerAction.Disconnect(this));
             if (socket != null) {
                 try {
                     socket.close();
                     System.out.println("Client socket disconnected successfully.");
                 } catch (IOException e) {
-                    System.out.println("Error closing client socket: " + e.getMessage());
+                    System.err.println("Error closing client socket: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
-            world.submitAction(new PlayerAction.Disconnect(this));
         }
     }
 }
