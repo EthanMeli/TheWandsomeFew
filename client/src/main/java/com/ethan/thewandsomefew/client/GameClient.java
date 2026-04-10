@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 3/5/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/10/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for Game Clients,
@@ -74,7 +74,7 @@ public final class GameClient {
                 Packet packet = codec.readPacket(in);
 
                 if (packet instanceof PlayerPositionPacket playerPosPacket) {
-                    System.out.println("Player Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
+                    System.out.println("Player " + playerPosPacket.playerId() + " Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
                 }
             }
         }

@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 4/4/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/10/2026
  *
  * Purpose:
  *   This file defines the PlayerPosition class.
@@ -34,17 +34,23 @@ import com.ethan.thewandsomefew.protocol.PacketId;
  * <p>
  * Format:
  * <ul>
- * <li>[x:int][y:int]</li>
+ * <li>[playerId:int][x:int][y:int]</li>
  * </ul>
  */
 public final class PlayerPositionPacket implements Packet {
 
+    private final int playerId;
     private final int x;
     private final int y;
 
-    public PlayerPositionPacket(int x, int y) {
+    public PlayerPositionPacket(int playerId, int x, int y) {
+        this.playerId = playerId;
         this.x = x;
         this.y = y;
+    }
+
+    public int playerId() {
+        return playerId;
     }
 
     public int x() {
@@ -62,13 +68,15 @@ public final class PlayerPositionPacket implements Packet {
 
     @Override
     public void write(DataOutput out) throws IOException {
+        out.writeInt(this.playerId);
         out.writeInt(this.x);
         out.writeInt(this.y);
     }
 
     public static PlayerPositionPacket read(DataInput in) throws IOException {
+        int playerId = in.readInt();
         int x = in.readInt();
         int y = in.readInt();
-        return new PlayerPositionPacket(x, y);
+        return new PlayerPositionPacket(playerId, x, y);
     }
 }

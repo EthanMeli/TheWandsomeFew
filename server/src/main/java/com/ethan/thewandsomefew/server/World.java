@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/9/2026
+ * Last Modified: 4/10/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -43,7 +43,7 @@ public final class World {
 
     private final ConcurrentLinkedQueue<PlayerAction> actions;
     private final Map<ClientSession, ConnectedPlayer> map;
-    private static final AtomicInteger nextId = new AtomicInteger(0);
+    private final AtomicInteger nextId = new AtomicInteger(0);
 
     public World() {
         actions = new ConcurrentLinkedQueue<>();
@@ -86,18 +86,28 @@ public final class World {
     public void tick() {
         processActions();
 
+        // recipient of packet
         map.forEach((client, connectedPlayer) -> {
-            if (client != null) {
-                connectedPlayer.player().tickMovement();
+            connectedPlayer.player().tickMovement();
+            System.out.println("Player " + connectedPlayer.id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
+        });
+        // subject (whose position is sent)
+        map.forEach((clientRecipient, recipient) -> {
+            map.forEach((clientSubject, subject) -> {
                 try {
-                    client.sendPacket(new PlayerPositionPacket(connectedPlayer.player().x(), connectedPlayer.player().y()));
+                    clientRecipient.sendPacket(
+                            new PlayerPositionPacket(
+                                    subject.id(),
+                                    subject.player().x(),
+                                    subject.player().y()
+                            )
+                    );
                 } catch (IOException e) {
-                    System.err.println("Error sending player position to client: " + e.getMessage());
-                    e.printStackTrace();
-                    submitAction(new PlayerAction.Disconnect(client));
+                    System.err.println("Error sending player position to client " + recipient.id() + ": " + e.getMessage());
+                    submitAction(new PlayerAction.Disconnect(clientRecipient));
+                    return;
                 }
-                System.out.println("Player " + connectedPlayer.id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
-            }
+            });
         });
     }
 }
