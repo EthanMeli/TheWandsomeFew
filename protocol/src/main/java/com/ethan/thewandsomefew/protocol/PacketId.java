@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 3/4/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/13/2026
  *
  * Purpose:
  *   This file is responsible for defining the PacketId Enum,
@@ -27,7 +27,9 @@ package com.ethan.thewandsomefew.protocol;
 public enum PacketId {
     HELLO(1),
     CLICK_TO_WALK(2),
-    PLAYER_POS(3);
+    PLAYER_POS(3),
+    PLAYER_JOIN(4),
+    PLAYER_LEAVE(5);
 
     private final int value;
 

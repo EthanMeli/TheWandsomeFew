@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 3/5/2026
- * Last Modified: 4/10/2026
+ * Last Modified: 4/13/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for Game Clients,
@@ -29,6 +29,8 @@ import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
+import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
 /**
@@ -75,6 +77,10 @@ public final class GameClient {
 
                 if (packet instanceof PlayerPositionPacket playerPosPacket) {
                     System.out.println("Player " + playerPosPacket.playerId() + " Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
+                } else if (packet instanceof PlayerJoinPacket join) {
+                    System.out.println("Player " + join.playerId() + " joined at (" + join.x() + ", " + join.y() + ")");
+                } else if (packet instanceof PlayerLeavePacket leave) {
+                    System.out.println("Player " + leave.playerId() + " left");
                 }
             }
         }
