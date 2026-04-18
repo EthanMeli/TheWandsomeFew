@@ -45,6 +45,7 @@ public class BfsPathFinder {
         };
 
         Tile currentTile = from;
+        visited.put(from, null);
         while (currentTile != null && !acceptableTargets.contains(currentTile)) {
             for (int[] dir : directions) {
                 int newX = currentTile.x() + dir[0];

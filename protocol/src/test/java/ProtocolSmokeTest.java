@@ -16,13 +16,16 @@
  *   - Used initially for testing protocol versions
  *   - May be expaned upon or deleted in the future
  */
-package com.ethan.thewandsomefew.protocol;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import com.ethan.thewandsomefew.protocol.Packet;
+import com.ethan.thewandsomefew.protocol.PacketCodec;
+import com.ethan.thewandsomefew.protocol.PacketId;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 
 public final class ProtocolSmokeTest {
