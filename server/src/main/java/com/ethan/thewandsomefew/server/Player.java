@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 3/8/2026
+ * Last Modified: 4/18/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for Players.
@@ -13,6 +13,9 @@
  *     tile on a tick basis towards its target position
  */
 package com.ethan.thewandsomefew.server;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * The Player class handles all logic related to Players (users).
@@ -37,12 +40,12 @@ public final class Player {
     private int x;
     private int y;
 
-    private Integer targetX; // Integer used for compare function in tickMovement
-    private Integer targetY;
+    private Deque<Tile> path;
 
     public Player(int x, int y) {
         this.x = x;
         this.y = y;
+        path = new ArrayDeque<>();
     }
 
     public int x() {
@@ -53,23 +56,18 @@ public final class Player {
         return y;
     }
 
-    public void setWalkTarget(int targetX, int targetY) {
-        this.targetX = targetX;
-        this.targetY = targetY;
+    public void setPath(Deque<Tile> path) {
+        this.path = path;
     }
 
-    // Movement is currently diagonal-prioritized and advances one tile per tick.
-    // This is a temporary simplification until pathfinding and collision are introduced.
+    // Paths are created by the BfsPathFinder class
+    // The implementation is a simple BFS path finder that moves
+    // in the order specified by 0002-tilemap-and-pathfinding
     public void tickMovement() {
-        if (this.targetX != null && this.targetY != null) {
-            this.x += Integer.compare(this.targetX, this.x);
-            this.y += Integer.compare(this.targetY, this.y);
-
-            if (Integer.compare(this.x, this.targetX) == 0 && Integer.compare(this.y, this.targetY) == 0) {
-                System.out.println("Player has reached target position.");
-                this.targetX = null;
-                this.targetY = null;
-            }
+        Tile nextTile;
+        if ((nextTile = path.poll()) != null) {
+            this.x = nextTile.x();
+            this.y = nextTile.y();
         }
     }
 }

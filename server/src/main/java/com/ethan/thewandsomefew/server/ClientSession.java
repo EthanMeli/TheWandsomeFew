@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/10/2026
+ * Last Modified: 4/18/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for individual
@@ -94,8 +94,8 @@ public final class ClientSession implements Runnable {
      *
      * @exception IOException occurs when the client disconnects from the server
      *
-     * Note: - Clients may disconnect for a number of reasons, so the finally
-     * block provides the opportunity to safely cleanup the client disconnection
+     * Note: Clients may disconnect for a number of reasons, so the finally
+     * block provides the opportunity to safely clean up the client disconnection
      */
     @Override
     public void run() {
