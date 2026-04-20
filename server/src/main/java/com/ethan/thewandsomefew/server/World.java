@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/18/2026
+ * Last Modified: 4/20/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -25,6 +25,7 @@ import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
+import com.ethan.thewandsomefew.protocol.packets.WelcomePacket;
 
 /**
  * The World class defines and tracks the current World state, performing
@@ -75,7 +76,10 @@ public final class World {
         // 2: Add the new player to the map
         clientPlayerMap.put(client, newPlayer);
 
-        // 3: Tell the new player about everyone in the world (including themselves)
+        // 3: Send player's client respective playerId to control client state
+        trySend(client, new WelcomePacket(newId));
+
+        // 4: Tell the new player about everyone in the world (including themselves)
         for (ConnectedPlayer existing : clientPlayerMap.values()) {
             trySend(client, new PlayerJoinPacket(existing.id(), existing.player().x(), existing.player().y()));
         }

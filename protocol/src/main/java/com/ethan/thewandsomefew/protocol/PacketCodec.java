@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 3/4/2026
- * Last Modified: 4/13/2026
+ * Last Modified: 4/20/2026
  *
  * Purpose:
  *   This file is responsible for defining the PacketCodec class.
@@ -31,6 +31,7 @@ import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
+import com.ethan.thewandsomefew.protocol.packets.WelcomePacket;
 
 /**
  * The PacketCodec class encodes and decodes packets on a binary stream.
@@ -61,6 +62,7 @@ public final class PacketCodec {
         register(PacketId.PLAYER_POS, PlayerPositionPacket::read);
         register(PacketId.PLAYER_JOIN, PlayerJoinPacket::read);
         register(PacketId.PLAYER_LEAVE, PlayerLeavePacket::read);
+        register(PacketId.WELCOME, WelcomePacket::read);
     }
 
     /**
