@@ -3,13 +3,13 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/18/2026
+ * Last Modified: 4/19/2026
  *
  * Purpose:
  *   Store the map of tiles for the World
  *
  * Responsibilities:
- *   - Store all tiles relating to the world map
+ *   - Store all tiles relating to the world map for the server
  *   - Provide functions to see whether tiles can be walked to
  *   - Create a test map for testing pathfinding functionality
  */
@@ -35,7 +35,7 @@ public class TileMap {
         return inBounds(x, y) && map[x][y].isWalkable();
     }
 
-    public final Tile[][] createTestMap() {
+    private Tile[][] createTestMap() {
         Tile[][] testMap = new Tile[50][50];
 
         for (int i = 0; i < 50; i++) {

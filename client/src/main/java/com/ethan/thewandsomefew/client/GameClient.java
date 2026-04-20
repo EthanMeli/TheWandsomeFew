@@ -33,6 +33,8 @@ import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
 
+import javafx.application.Application;
+
 /**
  * The GameClient class handles the packet exchange between individual clients
  * and the game server on the client side.
@@ -71,6 +73,8 @@ public final class GameClient {
             out.flush();
 
             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+
+            Application.launch(GameWindow.class, args);
 
             while (true) {
                 Packet packet = codec.readPacket(in);
