@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/19/2026
+ * Last Modified: 4/20/2026
  *
  * Purpose:
  *   
@@ -56,16 +56,30 @@ public class GameWindow extends Application {
     }
 
     private void render() {
-        for (int row = 0; row < tileMap.height(); row++) {
-            for (int col = 0; col < tileMap.width(); col++) {
-                if (tileMap.map()[row][col]) {
+
+        gc.clearRect(0, 0, camera.viewportWidth(), camera.viewportHeight());
+
+        double[] topLeft = camera.screenToWorld(0, 0);
+        double[] bottomRight = camera.screenToWorld(camera.viewportWidth(), camera.viewportHeight());
+
+        int minRow = Math.max(0, (int) topLeft[0]);
+        int maxRow = Math.min(tileMap.height(), (int) bottomRight[0] + 1);
+        int minCol = Math.max(0, (int) topLeft[1]);
+        int maxCol = Math.min(tileMap.width(), (int) bottomRight[1] + 1);
+
+        for (int row = minRow; row < maxRow; row++) {
+            for (int col = minCol; col < maxCol; col++) {
+
+                double[] screen = camera.worldToScreen(row, col);
+
+                if (tileMap.isWalkable(row, col)) {
                     gc.setFill(Color.GREEN);
                 } else {
                     gc.setFill(Color.RED);
                 }
-                gc.fillRect(row*camera.tileSize(), col*camera.tileSize(), camera.tileSize(), camera.tileSize());
+
+                gc.fillRect(screen[0], screen[1], camera.tileSize(), camera.tileSize());
             }
         }
     }
-
 }

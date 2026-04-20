@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/19/2026
+ * Last Modified: 4/20/2026
  *
  * Purpose:
  *   Store the map of tiles for the World (Client side)
@@ -36,7 +36,6 @@ public class TileMapData {
 
     public int width() { return width; }
     public int height() { return height; }
-    public boolean[][] map() { return map; }
 
     private boolean[][] createTestMap() {
         boolean[][] testMap = new boolean[height][width];

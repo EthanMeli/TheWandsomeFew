@@ -14,7 +14,7 @@ dependencies {
 
 application {
     mainClass.set("com.ethan.thewandsomefew.client.GameClient")
-    applicationDefaultJvmArgs = listOf("--enable-preview")
+    applicationDefaultJvmArgs = listOf("--enable-preview", "--enable-native-access=ALL-UNNAMED")
 }
 
 fun osdetect(): String {
