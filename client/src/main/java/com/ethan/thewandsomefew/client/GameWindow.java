@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/20/2026
+ * Last Modified: 4/22/2026
  *
  * Purpose:
  *   
@@ -28,9 +28,14 @@ public class GameWindow extends Application {
     private Camera camera;
     private Canvas canvas;
     private GraphicsContext gc;
+    private ClientState clientState;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        clientState = new ClientState();
+        NetworkThread network = new NetworkThread(clientState, "127.0.0.1", 43594);
+        new Thread(network, "network-thread").start();
 
         tileMap = new TileMapData();
         camera = new Camera();
@@ -59,6 +64,14 @@ public class GameWindow extends Application {
 
         gc.clearRect(0, 0, camera.viewportWidth(), camera.viewportHeight());
 
+        PlayerState localPlayer = clientState.getLocalPlayer();
+        if (localPlayer == null) {
+            // TODO: Create Loading Message
+            return;
+        }
+
+        camera.setCenter(localPlayer.x(), localPlayer.y());
+
         double[] topLeft = camera.screenToWorld(0, 0);
         double[] bottomRight = camera.screenToWorld(camera.viewportWidth(), camera.viewportHeight());
 
@@ -80,6 +93,16 @@ public class GameWindow extends Application {
 
                 gc.fillRect(screen[0], screen[1], camera.tileSize(), camera.tileSize());
             }
+        }
+
+        for (PlayerState player : clientState.getPlayers()) {
+            double[] playerPos = camera.worldToScreen(localPlayer.x(), localPlayer.y());
+            if (player.id() == localPlayer.id()) {
+                gc.setFill(Color.PURPLE);
+            } else {
+                gc.setFill(Color.ORANGE);
+            }
+            gc.fillRect(playerPos[0], playerPos[1], camera.tileSize(), camera.tileSize());
         }
     }
 }
