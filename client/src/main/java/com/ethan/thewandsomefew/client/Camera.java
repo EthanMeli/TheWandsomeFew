@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/20/2026
+ * Last Modified: 4/22/2026
  *
  * Purpose:
  *   
@@ -26,7 +26,7 @@ public class Camera {
     public Camera() {
         centerX = 25;
         centerY = 25;
-        tileSize = 32;
+        tileSize = 64;
         viewportWidth = 1024;
         viewportHeight = 576;
     }

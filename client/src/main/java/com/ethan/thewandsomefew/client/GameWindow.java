@@ -19,6 +19,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -29,6 +30,8 @@ public class GameWindow extends Application {
     private Canvas canvas;
     private GraphicsContext gc;
     private ClientState clientState;
+    private Image localPlayerSprite;
+    private Image playerSprite;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -45,6 +48,9 @@ public class GameWindow extends Application {
 
         canvas = new Canvas(camera.viewportWidth(), camera.viewportHeight());
         gc = canvas.getGraphicsContext2D();
+
+        localPlayerSprite = new Image(getClass().getResourceAsStream("/sprites/knight/knight01.png"));
+        playerSprite = new Image(getClass().getResourceAsStream("/sprites/characters/standard01.png"));
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
@@ -96,13 +102,17 @@ public class GameWindow extends Application {
         }
 
         for (PlayerState player : clientState.getPlayers()) {
-            double[] playerPos = camera.worldToScreen(localPlayer.x(), localPlayer.y());
-            if (player.id() == localPlayer.id()) {
-                gc.setFill(Color.PURPLE);
-            } else {
-                gc.setFill(Color.ORANGE);
-            }
-            gc.fillRect(playerPos[0], playerPos[1], camera.tileSize(), camera.tileSize());
+            double[] playerPos = camera.worldToScreen(player.x(), player.y());
+            if (player.id() != localPlayer.id()) {
+                // gc.setFill(Color.ORANGE);
+                // gc.fillRect(playerPos[0], playerPos[1], camera.tileSize(), camera.tileSize());
+                gc.drawImage(playerSprite, playerPos[0], playerPos[1], camera.tileSize(), camera.tileSize());
+            } 
         }
+
+        double[] localPlayerPos = camera.worldToScreen(localPlayer.x(), localPlayer.y());
+        // gc.setFill(Color.PURPLE);
+        // gc.fillRect(localPlayerPos[0], localPlayerPos[1], camera.tileSize(), camera.tileSize());
+        gc.drawImage(localPlayerSprite, localPlayerPos[0], localPlayerPos[1], camera.tileSize(), camera.tileSize());
     }
 }
