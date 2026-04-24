@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/20/2026
+ * Last Modified: 4/24/2026
  *
  * Purpose:
  *   Store the map of tiles for the World (Client side)
@@ -17,8 +17,8 @@ package com.ethan.thewandsomefew.client;
 
 public class TileMapData {
 
-    private final int width = 50;
-    private final int height = 50;
+    private static final int WIDTH = 50;
+    private static final int HEIGHT = 50;
 
     private final boolean[][] map;
 
@@ -31,18 +31,18 @@ public class TileMapData {
     }
 
     public boolean inBounds(int x, int y) {
-        return x >= 0 && x < width && y >= 0 && y < height;
+        return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT;
     }
 
-    public int width() { return width; }
-    public int height() { return height; }
+    public int width() { return WIDTH; }
+    public int height() { return HEIGHT; }
 
     private boolean[][] createTestMap() {
-        boolean[][] testMap = new boolean[height][width];
+        boolean[][] testMap = new boolean[WIDTH][HEIGHT];
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                testMap[i][j] = true;
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                testMap[x][y] = true;
             }
         }
 
@@ -58,8 +58,8 @@ public class TileMapData {
         testMap[2][3] = false;
 
         // Wall that is unpassable
-        for (int i = 0; i < width; i++) {
-            testMap[48][i] = false;
+        for (int y = 0; y < HEIGHT; y++) {
+            testMap[48][y] = false;
         }
 
         return testMap;

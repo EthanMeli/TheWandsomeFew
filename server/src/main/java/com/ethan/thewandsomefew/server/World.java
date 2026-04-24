@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/20/2026
+ * Last Modified: 4/24/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -99,6 +99,10 @@ public final class World {
     }
 
     private void setPlayerPath(ClientSession client, int x, int y) {
+        if (!worldTileMap.isWalkable(x, y)) {
+            return;
+        }
+
         Player p = getPlayerFromClient(client);
         Tile from = tileMap[p.x()][p.y()];
         Set<Tile> acceptableTargets = new HashSet<>();

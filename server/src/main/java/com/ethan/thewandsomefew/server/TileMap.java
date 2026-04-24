@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/19/2026
+ * Last Modified: 4/24/2026
  *
  * Purpose:
  *   Store the map of tiles for the World
@@ -17,6 +17,9 @@ package com.ethan.thewandsomefew.server;
 
 public class TileMap {
 
+    private static final int WIDTH = 50;
+    private static final int HEIGHT = 50;
+
     private final Tile[][] map;
 
     public TileMap() {
@@ -27,8 +30,8 @@ public class TileMap {
         return this.map;
     }
 
-    private boolean inBounds(int x, int y) {
-        return x >= 0 && x < map.length && y >= 0 && y < map[x].length;
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT;
     }
 
     public boolean isWalkable(int x, int y) {
@@ -36,11 +39,11 @@ public class TileMap {
     }
 
     private Tile[][] createTestMap() {
-        Tile[][] testMap = new Tile[50][50];
+        Tile[][] testMap = new Tile[WIDTH][HEIGHT];
 
-        for (int i = 0; i < 50; i++) {
-            for (int j = 0; j < 50; j++) {
-                testMap[i][j] = new Tile(i, j, true);
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                testMap[x][y] = new Tile(x, y, true);
             }
         }
 
@@ -56,8 +59,8 @@ public class TileMap {
         testMap[2][3] = new Tile(2, 3, false);
 
         // Wall that is unpassable
-        for (int i = 0; i < 50; i++) {
-            testMap[48][i] = new Tile(48, i, false);
+        for (int y = 0; y < HEIGHT; y++) {
+            testMap[48][y] = new Tile(48, y, false);
         }
 
         return testMap;
