@@ -7,8 +7,7 @@
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
- *   logic associated with various entities (only Player for now, but eventually
- *   will include NPCs, Quests, etc.)
+ *   logic associated with various entities.
  */
 package com.ethan.thewandsomefew.server;
 
