@@ -49,6 +49,7 @@ public final class World {
 
     private final ConcurrentLinkedQueue<PlayerAction> actions;
     private final Map<ClientSession, ConnectedPlayer> clientPlayerMap;
+    private final Map<Integer, Entity> entities;
     private final TileMap worldTileMap;
     private final BfsPathFinder pathFinder;
     private final AtomicInteger nextId = new AtomicInteger(0);
@@ -56,6 +57,7 @@ public final class World {
     public World() {
         actions = new ConcurrentLinkedQueue<>();
         clientPlayerMap = new HashMap<>();
+        entities = new HashMap<>();
         worldTileMap = new TileMap();
         pathFinder = new BfsPathFinder(worldTileMap);
     }
@@ -68,8 +70,9 @@ public final class World {
             trySend(existing.clientSession(), new PlayerJoinPacket(player.id(), player.x(), player.y()));
         }
 
-        // 2: Add the new player to the map
+        // 2: Add the new player to the maps
         clientPlayerMap.put(client, newPlayer);
+        entities.put(player.id(), player);
 
         // 3: Send player's client respective playerId to control client state
         trySend(client, new WelcomePacket(player.id()));
@@ -86,6 +89,7 @@ public final class World {
 
         // Remove first so we don't try to send a leave packet to the leaver
         clientPlayerMap.remove(client);
+        entities.remove(leaving.player().id());
 
         // Tell every other client
         for (ConnectedPlayer remaining : clientPlayerMap.values()) {
