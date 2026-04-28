@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 3/4/2026
- * Last Modified: 4/20/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for defining the PacketId Enum,
@@ -30,7 +30,10 @@ public enum PacketId {
     PLAYER_POS(3),
     PLAYER_JOIN(4),
     PLAYER_LEAVE(5),
-    WELCOME(6);
+    WELCOME(6),
+    NPC_JOIN(7),
+    NPC_LEAVE(8),
+    NPC_POS(9);
 
     private final int value;
 

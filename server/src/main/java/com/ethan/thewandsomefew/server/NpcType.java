@@ -22,4 +22,13 @@ public enum NpcType {
     public int value() {
         return value;
     }
+
+    public static NpcType fromValue(int value) {
+        for (NpcType type : values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        return null;
+    }
 }
