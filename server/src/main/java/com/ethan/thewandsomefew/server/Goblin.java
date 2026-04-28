@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/27/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  * 
  * Purpose:
  *   Concrete NPC type representing a basic goblin enemy. Models the
@@ -26,8 +26,9 @@ public final class Goblin extends Npc {
     private static final int GOBLIN_MAX_HIT = 1;
     private static final int GOBLIN_ATTACK_SPEED = 4;
     private static final NpcType TYPE = NpcType.GOBLIN;
+    private static final int GOBLIN_RESPAWN_DELAY_TICKS = 10;
 
     public Goblin(int id, Tile spawnTile) {
-        super(id, TYPE, spawnTile, GOBLIN_MAX_HP, GOBLIN_MAX_HIT, GOBLIN_ATTACK_SPEED);
+        super(id, TYPE, spawnTile, GOBLIN_MAX_HP, GOBLIN_MAX_HIT, GOBLIN_ATTACK_SPEED, GOBLIN_RESPAWN_DELAY_TICKS);
     }
 }

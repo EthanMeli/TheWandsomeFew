@@ -12,16 +12,21 @@
 package com.ethan.thewandsomefew.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.NpcPositionPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
@@ -49,12 +54,20 @@ import com.ethan.thewandsomefew.protocol.packets.WelcomePacket;
  */
 public final class World {
 
-    private final ConcurrentLinkedQueue<PlayerAction> actions;
-    private final Map<ClientSession, ConnectedPlayer> clientPlayerMap;
-    private final Map<Integer, Entity> entities;
+    // --- World ---
     private final TileMap worldTileMap;
     private final BfsPathFinder pathFinder;
     private final AtomicInteger nextId = new AtomicInteger(0);
+
+    // --- Player ---
+    private final ConcurrentLinkedQueue<PlayerAction> actions;
+    private final Map<ClientSession, ConnectedPlayer> clientPlayerMap;
+
+    // --- NPCs ---
+    private final List<Tile> goblinSpawnPoints;
+    private final Map<Integer, Entity> entities;
+    private final List<PendingRespawn> pendingRespawns;
+    private final Random random;
 
     public World() {
         actions = new ConcurrentLinkedQueue<>();
@@ -62,6 +75,9 @@ public final class World {
         entities = new HashMap<>();
         worldTileMap = new TileMap();
         pathFinder = new BfsPathFinder(worldTileMap);
+        goblinSpawnPoints = buildGoblinSpawnPoints();
+        pendingRespawns = new ArrayList<>();
+        random = new Random();
         spawnInitialNpcs();
     }
 
@@ -90,7 +106,7 @@ public final class World {
         for (Entity entity : entities.values()) {
             if (entity instanceof Npc npc) {
                 trySend(client, new NpcJoinPacket(
-                    npc.id(), npc.type().value(), npc.x(), npc.y()
+                        npc.id(), npc.type().value(), npc.x(), npc.y()
                 ));
             }
         }
@@ -98,7 +114,9 @@ public final class World {
 
     private void disconnectPlayer(ClientSession client) {
         ConnectedPlayer leaving = clientPlayerMap.get(client);
-        if (leaving == null) return;
+        if (leaving == null) {
+            return;
+        }
 
         // Remove first so we don't try to send a leave packet to the leaver
         clientPlayerMap.remove(client);
@@ -151,15 +169,96 @@ public final class World {
         }
     }
 
-    // --- Npc-related functions ---
-    private void spawnInitialNpcs() {
-        int goblinId = nextId.incrementAndGet();
-        Tile spawnTile = worldTileMap.tileAt(10, 10);
-        Goblin goblin = new Goblin(goblinId, spawnTile);
-        entities.put(goblin.id(), goblin);
+    // --- Npc-related functions and classes ---
+    private static final class PendingRespawn {
+
+        final NpcType type;
+        int ticksRemaining;
+
+        PendingRespawn(NpcType type, int ticksRemaining) {
+            this.type = type;
+            this.ticksRemaining = ticksRemaining;
+        }
     }
 
-    /** Helper function to send a packet to a client, queueing a disconnect if the send fails. */
+    private void spawnInitialNpcs() {
+        spawnNpc(NpcType.GOBLIN);
+    }
+
+    private void processRespawns() {
+        Iterator<PendingRespawn> it = pendingRespawns.iterator();
+
+        while (it.hasNext()) {
+            PendingRespawn respawn = it.next();
+            respawn.ticksRemaining--;
+            if (respawn.ticksRemaining <= 0) {
+                spawnNpc(respawn.type);
+                it.remove();
+            }
+        }
+    }
+
+    private void spawnNpc(NpcType type) {
+        int npcId = nextId.incrementAndGet();
+        Tile spawnTile = pickSpawnTile(type);
+        Npc npc = createNpc(type, npcId, spawnTile);
+        entities.put(npc.id(), npc);
+
+        // Broadcast join to all connected clients
+        for (ConnectedPlayer p : clientPlayerMap.values()) {
+            trySend(p.clientSession(), new NpcJoinPacket(npcId, npc.type().value(), npc.x(), npc.y()));
+        }
+    }
+
+    private Tile pickSpawnTile(NpcType type) {
+        List<Tile> spawnPoints = switch (type) {
+            case GOBLIN -> goblinSpawnPoints;
+        };
+        return spawnPoints.get(random.nextInt(spawnPoints.size()));
+    }
+
+    private Npc createNpc(NpcType type, int npcId, Tile spawnTile) {
+        return switch (type) {
+            case GOBLIN -> new Goblin(npcId, spawnTile);
+        };
+    }
+
+    private List<Tile> buildGoblinSpawnPoints() {
+        List<Tile> points = new ArrayList<>();
+        int[][] coords = {{10, 10}, {10, 11}, {11, 10}, {11, 11}};
+        for (int[] c : coords) {
+            Tile t = worldTileMap.tileAt(c[0], c[1]);
+            if (!t.isWalkable()) {
+                throw new IllegalStateException("Goblin spawn point is not walkable: " + t);
+            }
+            points.add(t);
+        }
+        return points;
+    }
+
+    /**
+     * Death handling involves removing for the entity map, broadcasting to all
+     * clients, and scheduling the NPC's respawn
+     */
+    private void handleNpcDeath(Npc npc) {
+        entities.remove(npc.id());
+
+        for (ConnectedPlayer p : clientPlayerMap.values()) {
+            trySend(p.clientSession(), new NpcLeavePacket(npc.id()));
+        }
+
+        scheduleRespawn(npc.type(), npc.respawnDelayTicks());
+    }
+
+    private void scheduleRespawn(NpcType type, int respawnDelayTicks) {
+        PendingRespawn schedule = new PendingRespawn(type, respawnDelayTicks);
+        pendingRespawns.add(schedule);
+    }
+
+    /**
+     * Helper function to send a packet to a client, queueing a disconnect if
+     * the send fails.
+     */
     private void trySend(ClientSession client, Packet packet) {
         try {
             client.sendPacket(packet);
@@ -169,11 +268,26 @@ public final class World {
         }
     }
 
+    // DEBUG (Delete)
+    private int tickCount = 0;
+
     // tick() currently only updates and logs player movement towards a target position,
     // but will need to be expanded upon when new actions and entities are introduced
     // to the World
     public void tick() {
         processActions();
+        processRespawns();
+
+        // DEBUG (Delete)
+        tickCount++;
+        if (tickCount % 30 == 0) {
+            for (Entity e : entities.values()) {
+                if (e instanceof Goblin g) {
+                    handleNpcDeath(g);
+                    break;
+                }
+            }
+        }
 
         // iterate and apply tick movement for all entities
         for (Entity e : entities.values()) {
@@ -186,13 +300,13 @@ public final class World {
         for (ConnectedPlayer recipient : clientPlayerMap.values()) {
             for (ConnectedPlayer subject : clientPlayerMap.values()) {
                 trySend(recipient.clientSession(), new PlayerPositionPacket(
-                    subject.player().id(), subject.player().x(), subject.player().y()
+                        subject.player().id(), subject.player().x(), subject.player().y()
                 ));
             }
             for (Entity entity : entities.values()) {
                 if (entity instanceof Npc npc) {
                     trySend(recipient.clientSession(), new NpcPositionPacket(
-                        npc.id(), npc.x(), npc.y()
+                            npc.id(), npc.x(), npc.y()
                     ));
                 }
             }
