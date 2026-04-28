@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcPositionPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
@@ -174,11 +175,12 @@ public final class World {
     public void tick() {
         processActions();
 
-        // recipient of packet
-        clientPlayerMap.forEach((client, connectedPlayer) -> {
-            connectedPlayer.player().tickMovement();
-            System.out.println("Player " + connectedPlayer.player().id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
-        });
+        // iterate and apply tick movement for all entities
+        for (Entity e : entities.values()) {
+            if (e instanceof LivingEntity living) {
+                living.tickMovement();
+            }
+        }
 
         // subject (whose position is sent)
         for (ConnectedPlayer recipient : clientPlayerMap.values()) {
@@ -186,6 +188,13 @@ public final class World {
                 trySend(recipient.clientSession(), new PlayerPositionPacket(
                     subject.player().id(), subject.player().x(), subject.player().y()
                 ));
+            }
+            for (Entity entity : entities.values()) {
+                if (entity instanceof Npc npc) {
+                    trySend(recipient.clientSession(), new NpcPositionPacket(
+                        npc.id(), npc.x(), npc.y()
+                    ));
+                }
             }
         }
     }

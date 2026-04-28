@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/22/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   This file is responsible for defining the network thread logic for game clients.
@@ -31,6 +31,8 @@ import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcLeavePacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcPositionPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
@@ -77,7 +79,7 @@ public final class NetworkThread implements Runnable {
                 if (packet instanceof PlayerPositionPacket playerPosPacket) {
                     System.out.println("Player " + playerPosPacket.playerId() + " Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
                     Platform.runLater(() -> {
-                        clientState.updatePosition(playerPosPacket.playerId(), playerPosPacket.x(), playerPosPacket.y());
+                        clientState.updatePlayerPosition(playerPosPacket.playerId(), playerPosPacket.x(), playerPosPacket.y());
                     });
                 } else if (packet instanceof PlayerJoinPacket join) {
                     System.out.println("Player " + join.playerId() + " joined at (" + join.x() + ", " + join.y() + ")");
@@ -96,6 +98,18 @@ public final class NetworkThread implements Runnable {
                     });
                 } else if (packet instanceof NpcJoinPacket join) {
                     System.out.println("NPC " + join.npcId() + " (type=" + join.npcType() + ") at (" + join.x() + ", " + join.y() + ")");
+                    Platform.runLater(() -> {
+                        clientState.addNpc(join.npcId(), join.npcType(), join.x(), join.y());
+                    });
+                } else if (packet instanceof NpcPositionPacket position) {
+                    Platform.runLater(() -> {
+                        clientState.updateNpcPosition(position.npcId(), position.x(), position.y());
+                    });
+                } else if (packet instanceof NpcLeavePacket leave) {
+                    System.out.println("NPC " + leave.npcId() + " left.");
+                    Platform.runLater(() -> {
+                        clientState.removeNpc(leave.npcId());
+                    });
                 }
             }
         } catch (IOException e) {

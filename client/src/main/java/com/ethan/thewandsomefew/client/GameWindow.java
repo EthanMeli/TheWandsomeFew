@@ -110,6 +110,13 @@ public class GameWindow extends Application {
             }
         }
 
+        // Render NPCs before player so player is on top if on same tile
+        for (NpcState npc : clientState.getNpcs()) {
+            double[] npcPos = camera.worldToScreen(npc.x(), npc.y());
+            gc.setFill(Color.DARKGREEN);
+            gc.fillRect(npcPos[0], npcPos[1], camera.tileSize(), camera.tileSize());
+        }
+
         for (PlayerState player : clientState.getPlayers()) {
             double[] playerPos = camera.worldToScreen(player.x(), player.y());
             if (player.id() != localPlayer.id()) {
