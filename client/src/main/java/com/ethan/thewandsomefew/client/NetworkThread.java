@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/22/2026
- * Last Modified: 4/22/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for defining the network thread logic for game clients.
@@ -29,7 +29,6 @@ import java.net.Socket;
 
 import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
-import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
@@ -70,7 +69,6 @@ public final class NetworkThread implements Runnable {
     public void run() {
         try {
             sendPacket(new HelloPacket(258));
-            sendPacket(new ClickToWalkPacket(40, 47));
 
             while (running) {
                 Packet packet = codec.readPacket(in);

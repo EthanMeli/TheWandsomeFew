@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/24/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -51,7 +51,6 @@ public final class World {
     private final ConcurrentLinkedQueue<PlayerAction> actions;
     private final Map<ClientSession, ConnectedPlayer> clientPlayerMap;
     private final TileMap worldTileMap;
-    private final Tile[][] tileMap;
     private final BfsPathFinder pathFinder;
     private final AtomicInteger nextId = new AtomicInteger(0);
 
@@ -59,29 +58,26 @@ public final class World {
         actions = new ConcurrentLinkedQueue<>();
         clientPlayerMap = new HashMap<>();
         worldTileMap = new TileMap();
-        tileMap = worldTileMap.map();
         pathFinder = new BfsPathFinder(worldTileMap);
     }
 
     private void connectPlayer(ClientSession client, Player player) {
-        int newId = nextId.incrementAndGet();
-        ConnectedPlayer newPlayer = new ConnectedPlayer(newId, player, client);
+        ConnectedPlayer newPlayer = new ConnectedPlayer(player, client);
 
         // 1: Tell every existing player about the new one
-        // (do this BEFORE adding to map as to not send to ourselves twice)
         for (ConnectedPlayer existing : clientPlayerMap.values()) {
-            trySend(existing.clientSession(), new PlayerJoinPacket(newId, player.x(), player.y()));
+            trySend(existing.clientSession(), new PlayerJoinPacket(player.id(), player.x(), player.y()));
         }
 
         // 2: Add the new player to the map
         clientPlayerMap.put(client, newPlayer);
 
         // 3: Send player's client respective playerId to control client state
-        trySend(client, new WelcomePacket(newId));
+        trySend(client, new WelcomePacket(player.id()));
 
         // 4: Tell the new player about everyone in the world (including themselves)
         for (ConnectedPlayer existing : clientPlayerMap.values()) {
-            trySend(client, new PlayerJoinPacket(existing.id(), existing.player().x(), existing.player().y()));
+            trySend(client, new PlayerJoinPacket(existing.player().id(), existing.player().x(), existing.player().y()));
         }
     }
 
@@ -94,7 +90,7 @@ public final class World {
 
         // Tell every other client
         for (ConnectedPlayer remaining : clientPlayerMap.values()) {
-            trySend(remaining.clientSession(), new PlayerLeavePacket(leaving.id()));
+            trySend(remaining.clientSession(), new PlayerLeavePacket(leaving.player().id()));
         }
     }
 
@@ -104,9 +100,9 @@ public final class World {
         }
 
         Player p = getPlayerFromClient(client);
-        Tile from = tileMap[p.x()][p.y()];
+        Tile from = worldTileMap.tileAt(p.x(), p.y());
         Set<Tile> acceptableTargets = new HashSet<>();
-        acceptableTargets.add(tileMap[x][y]);
+        acceptableTargets.add(worldTileMap.tileAt(x, y));
 
         Deque<Tile> path = pathFinder.findPath(from, acceptableTargets);
         p.setPath(path);
@@ -124,8 +120,13 @@ public final class World {
         PlayerAction action;
         while ((action = actions.poll()) != null) {
             switch (action) {
-                case PlayerAction.Connect(ClientSession client, Player player) ->
+                case PlayerAction.Connect(ClientSession client) -> {
+                    int newId = nextId.incrementAndGet();
+                    int spawnX = 0;
+                    int spawnY = 0;
+                    Player player = new Player(newId, spawnX, spawnY);
                     connectPlayer(client, player);
+                }
                 case PlayerAction.Disconnect(ClientSession client) ->
                     disconnectPlayer(client);
                 case PlayerAction.Walk(ClientSession client, int x, int y) ->
@@ -153,25 +154,16 @@ public final class World {
         // recipient of packet
         clientPlayerMap.forEach((client, connectedPlayer) -> {
             connectedPlayer.player().tickMovement();
-            System.out.println("Player " + connectedPlayer.id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
+            System.out.println("Player " + connectedPlayer.player().id() + " Position: x=" + connectedPlayer.player().x() + ", y=" + connectedPlayer.player().y());
         });
+
         // subject (whose position is sent)
-        clientPlayerMap.forEach((clientRecipient, recipient) -> {
-            clientPlayerMap.forEach((clientSubject, subject) -> {
-                try {
-                    clientRecipient.sendPacket(
-                            new PlayerPositionPacket(
-                                    subject.id(),
-                                    subject.player().x(),
-                                    subject.player().y()
-                            )
-                    );
-                } catch (IOException e) {
-                    System.err.println("Error sending player position to client " + recipient.id() + ": " + e.getMessage());
-                    submitAction(new PlayerAction.Disconnect(clientRecipient));
-                    return;
-                }
-            });
-        });
+        for (ConnectedPlayer recipient : clientPlayerMap.values()) {
+            for (ConnectedPlayer subject : clientPlayerMap.values()) {
+                trySend(recipient.clientSession(), new PlayerPositionPacket(
+                    subject.player().id(), subject.player().x(), subject.player().y()
+                ));
+            }
+        }
     }
 }

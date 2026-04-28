@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/4/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   To provide an abstraction for a connected player and their associated
@@ -12,7 +12,7 @@
 package com.ethan.thewandsomefew.server;
 
 /**
- * The ConnectedPlayer class exists so World can treat (session + player + id)
+ * The ConnectedPlayer class exists so World can treat (session + player)
  * as a single unit rather than managing parallel maps
  *
  * <p>
@@ -24,18 +24,12 @@ package com.ethan.thewandsomefew.server;
  */
 public final class ConnectedPlayer {
 
-    private final int id;
     private final Player player;
     private final ClientSession clientSession;
 
-    public ConnectedPlayer(int id, Player player, ClientSession clientSession) {
-        this.id = id;
+    public ConnectedPlayer(Player player, ClientSession clientSession) {
         this.player = player;
         this.clientSession = clientSession;
-    }
-
-    public int id() {
-        return id;
     }
 
     public Player player() {

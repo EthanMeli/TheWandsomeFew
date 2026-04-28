@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/6/2026
- * Last Modified: 4/6/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for creating Player Actions which
@@ -34,7 +34,7 @@ package com.ethan.thewandsomefew.server;
  */
 public sealed interface PlayerAction {
 
-    record Connect(ClientSession client, Player player) implements PlayerAction {
+    record Connect(ClientSession client) implements PlayerAction {
 
     }
 

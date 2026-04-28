@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/24/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   Store the map of tiles for the World
@@ -36,6 +36,10 @@ public class TileMap {
 
     public boolean isWalkable(int x, int y) {
         return inBounds(x, y) && map[x][y].isWalkable();
+    }
+
+    public Tile tileAt(int x, int y) {
+        return map[x][y];
     }
 
     private Tile[][] createTestMap() {

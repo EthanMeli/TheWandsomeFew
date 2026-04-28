@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/5/2026
- * Last Modified: 4/4/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for central game server,
@@ -65,7 +65,7 @@ public final class GameServer {
             while (true) {
                 Socket socket = serverSocket.accept();
                 ClientSession clientSession = new ClientSession(socket, codec, world);
-                world.submitAction(new PlayerAction.Connect(clientSession, new Player(0, 0)));
+                world.submitAction(new PlayerAction.Connect(clientSession));
                 new Thread(clientSession, "client-" + socket.getPort()).start();
             }
         }
