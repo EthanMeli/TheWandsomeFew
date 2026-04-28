@@ -3,7 +3,7 @@
  * Module: client
  * Authored By: Ethan Meli
  * Created: 4/19/2026
- * Last Modified: 4/24/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   Create and render the client application based on server state.
