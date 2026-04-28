@@ -39,6 +39,9 @@ public class TileMap {
     }
 
     public Tile tileAt(int x, int y) {
+        if (!inBounds(x, y)) {
+            throw new IllegalArgumentException("Tile out of bounds: (" + x + ", " + y + ")");
+        }
         return map[x][y];
     }
 

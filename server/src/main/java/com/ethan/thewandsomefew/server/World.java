@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ethan.thewandsomefew.protocol.Packet;
+import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
@@ -60,8 +61,10 @@ public final class World {
         entities = new HashMap<>();
         worldTileMap = new TileMap();
         pathFinder = new BfsPathFinder(worldTileMap);
+        spawnInitialNpcs();
     }
 
+    // --- Player-related functions ---
     private void connectPlayer(ClientSession client, Player player) {
         ConnectedPlayer newPlayer = new ConnectedPlayer(player, client);
 
@@ -80,6 +83,15 @@ public final class World {
         // 4: Tell the new player about everyone in the world (including themselves)
         for (ConnectedPlayer existing : clientPlayerMap.values()) {
             trySend(client, new PlayerJoinPacket(existing.player().id(), existing.player().x(), existing.player().y()));
+        }
+
+        // 5: Tell the new player about every NPC in the world
+        for (Entity entity : entities.values()) {
+            if (entity instanceof Npc npc) {
+                trySend(client, new NpcJoinPacket(
+                    npc.id(), npc.type().value(), npc.x(), npc.y()
+                ));
+            }
         }
     }
 
@@ -136,6 +148,14 @@ public final class World {
                     setPlayerPath(client, x, y);
             }
         }
+    }
+
+    // --- Npc-related functions ---
+    private void spawnInitialNpcs() {
+        int goblinId = nextId.incrementAndGet();
+        Tile spawnTile = worldTileMap.tileAt(10, 10);
+        Goblin goblin = new Goblin(goblinId, spawnTile);
+        entities.put(goblin.id(), goblin);
     }
 
     /** Helper function to send a packet to a client, queueing a disconnect if the send fails. */

@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/18/2026
+ * Last Modified: 4/27/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for path finding
@@ -22,12 +22,10 @@ import java.util.Set;
 
 public class BfsPathFinder {
 
-    private final TileMap tileMap;
-    private final Tile[][] worldTileMap;
+    private final TileMap worldTileMap;
 
-    public BfsPathFinder(TileMap tileMap) {
-        this.tileMap = tileMap;
-        this.worldTileMap = tileMap.map();
+    public BfsPathFinder(TileMap worldTileMap) {
+        this.worldTileMap = worldTileMap;
     }
 
     public ArrayDeque<Tile> findPath(Tile from, Set<Tile> acceptableTargets) {
@@ -50,9 +48,9 @@ public class BfsPathFinder {
             for (int[] dir : directions) {
                 int newX = currentTile.x() + dir[0];
                 int newY = currentTile.y() + dir[1];
-                if (tileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap[newX][newY])) {
-                    neighbors.add(worldTileMap[newX][newY]);
-                    visited.put(worldTileMap[newX][newY], currentTile);
+                if (worldTileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap.tileAt(newX, newY))) {
+                    neighbors.add(worldTileMap.tileAt(newX, newY));
+                    visited.put(worldTileMap.tileAt(newX, newY), currentTile);
                 }
             }
             currentTile = neighbors.poll();

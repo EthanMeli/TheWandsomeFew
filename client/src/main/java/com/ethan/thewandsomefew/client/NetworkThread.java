@@ -30,6 +30,7 @@ import java.net.Socket;
 import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.PlayerPositionPacket;
@@ -93,6 +94,8 @@ public final class NetworkThread implements Runnable {
                     Platform.runLater(() -> {
                         clientState.setLocalPlayerId(welcome.playerId());
                     });
+                } else if (packet instanceof NpcJoinPacket join) {
+                    System.out.println("NPC " + join.npcId() + " (type=" + join.npcType() + ") at (" + join.x() + ", " + join.y() + ")");
                 }
             }
         } catch (IOException e) {
