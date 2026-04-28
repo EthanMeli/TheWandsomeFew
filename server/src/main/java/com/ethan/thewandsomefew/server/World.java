@@ -12,6 +12,7 @@
 package com.ethan.thewandsomefew.server;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -319,6 +320,33 @@ public final class World {
     }
 
     /**
+     * Picks a tile for an Npc in combat to shuffle to in the instance
+     * that a player is stacked on top of its target
+     * @param entity to be moved
+     * @return tile for entity to be moved to
+     */
+    private Tile pickShuffleTile(LivingEntity entity) {
+        int[][] directions = {
+            {0, -1},  // west
+            {0, 1},   // east
+            {1, 0},   // south
+            {-1, 0},  // north
+            {1, -1},  // south-west
+            {1, 1},   // south-east
+            {-1, -1}, // north-west
+            {-1, 1}   // north-east
+        };
+        for (int[] dir : directions) {
+            int nx = entity.x() + dir[0];
+            int ny = entity.y() + dir[1];
+            if (worldTileMap.isWalkable(nx, ny)) {
+                return worldTileMap.tileAt(nx, ny);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Helper function to send a packet to a client, queueing a disconnect if
      * the send fails.
      */
@@ -331,9 +359,6 @@ public final class World {
         }
     }
 
-    // DEBUG (Delete)
-    private int tickCount = 0;
-
     // tick() currently only updates and logs player movement towards a target position,
     // but will need to be expanded upon when new actions and entities are introduced
     // to the World
@@ -341,39 +366,73 @@ public final class World {
         processActions();
         processRespawns();
 
-        // DEBUG (Delete)
-        tickCount++;
-        if (tickCount % 30 == 0) {
-            for (Entity e : entities.values()) {
-                if (e instanceof Goblin g) {
-                    handleNpcDeath(g);
-                    break;
+        List<Npc> npcsToKill = new ArrayList<>();
+        List<Player> playersWhoDied = new ArrayList<>();
+
+        // iterate and apply combat logic for all entities
+        for (Entity e : entities.values()) {
+            if (!(e instanceof LivingEntity attacker) || !attacker.hasCombatTarget()) {
+                continue;
+            }
+
+            attacker.tickAttackTimer();
+
+            Entity targetEntity = entities.get(attacker.combatTargetId());
+            if (!(targetEntity instanceof LivingEntity target)) {
+                continue; // re-path loop clears combat target next iteration
+            }
+
+            if (!isInMeleeRange(attacker, target)) {
+                if (attacker.x() == target.x() && attacker.y() == target.y()) {
+                    // Same tile - shuffle out (NPC only)
+                    if (attacker instanceof Npc) {
+                        Tile shuffleTile = pickShuffleTile(attacker);
+                        if (shuffleTile != null) {
+                            Deque<Tile> shufflePath = new ArrayDeque<>();
+                            attacker.setPath(shufflePath);
+                        }
+                    } else {
+                        pathToCombatTarget(attacker, target);
+                    }
+                } else {
+                    pathToCombatTarget(attacker, target);
+                }
+                continue; // not close enough yet
+            }
+
+            if (!attacker.canAttack()) {
+                continue; // on cooldown
+            }
+
+            if (target instanceof Npc) {
+                target.setCombatTarget(e.id()); // set npc to retaliate when reached (don't do for player since they may be running away)
+            }
+
+            int damage = random.nextInt(attacker.maxHit() + 1);
+            boolean killed = target.takeDamage(damage);
+            attacker.resetAttackTimer();
+
+            System.out.println("Entity " + attacker.id() + " hit entity " + target.id() + " for " + damage + " hp.");
+            System.out.println("Entity " + attacker.id() + " hp: " + attacker.hp());
+
+            if (killed) {
+                switch (target) {
+                    case Npc n -> npcsToKill.add(n);
+                    case Player p -> playersWhoDied.add(p);
+                    default -> {
+                    }
                 }
             }
         }
 
-        // iterate and apply combat logic for all entities
-        for (Entity e : entities.values()) {
-            if (e instanceof LivingEntity living && living.hasCombatTarget()) {
-                Entity target = entities.get(living.combatTargetId());
-                if (target == null) {
-                    living.clearCombatTarget();
-                    living.clearPath();
-                    continue;
-                }
-                if (!(target instanceof LivingEntity livingTarget)) {
-                    living.clearCombatTarget();
-                    living.clearPath();
-                    continue;
-                }
+        for (Npc n : npcsToKill) {
+            handleNpcDeath(n);
+        }
 
-                // Check if in attack range
-                if (isInMeleeRange(living, livingTarget)) {
-                    living.clearPath();
-                } else {
-                    pathToCombatTarget(living, livingTarget);
-                }
-            }
+        for (Player p : playersWhoDied) {
+            System.out.println("Player " + p.id() + " died.");
+            p.clearCombatTarget();
+            p.clearPath();
         }
 
         // iterate and apply tick movement for all entities
