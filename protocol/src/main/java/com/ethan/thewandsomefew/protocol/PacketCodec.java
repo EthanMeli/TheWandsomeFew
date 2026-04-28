@@ -3,7 +3,7 @@
  * Module: protocol
  * Authored By: Ethan Meli
  * Created: 3/4/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   This file is responsible for defining the PacketCodec class.
@@ -28,6 +28,7 @@ import java.util.Map;
 
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcInteractPacket;
 import com.ethan.thewandsomefew.protocol.packets.NpcJoinPacket;
 import com.ethan.thewandsomefew.protocol.packets.NpcLeavePacket;
 import com.ethan.thewandsomefew.protocol.packets.NpcPositionPacket;
@@ -69,6 +70,7 @@ public final class PacketCodec {
         register(PacketId.NPC_JOIN, NpcJoinPacket::read);
         register(PacketId.NPC_LEAVE, NpcLeavePacket::read);
         register(PacketId.NPC_POS, NpcPositionPacket::read);
+        register(PacketId.NPC_INTERACT, NpcInteractPacket::read);
     }
 
     /**

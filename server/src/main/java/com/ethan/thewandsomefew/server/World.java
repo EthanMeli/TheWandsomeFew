@@ -138,12 +138,73 @@ public final class World {
         Set<Tile> acceptableTargets = new HashSet<>();
         acceptableTargets.add(worldTileMap.tileAt(x, y));
 
+        p.clearCombatTarget();
+
         Deque<Tile> path = pathFinder.findPath(from, acceptableTargets);
         p.setPath(path);
     }
 
+    private void handleAttackAction(ClientSession client, int npcId) {
+        Player player = getPlayerFromClient(client);
+        Entity target = getEntityFromId(npcId);
+
+        if (!(target instanceof Npc npcTarget)) {
+            return;
+        }
+
+        player.setCombatTarget(npcId);
+
+        pathToCombatTarget(player, npcTarget);
+    }
+
+    private void pathToCombatTarget(LivingEntity attacker, LivingEntity target) {
+        Tile from = worldTileMap.tileAt(attacker.x(), attacker.y());
+        Set<Tile> acceptableTargets = adjacentWalkableTiles(target);
+
+        if (acceptableTargets.isEmpty()) {
+            attacker.clearPath();
+            return;
+        }
+
+        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets);
+        attacker.setPath(path);
+    }
+
+    private Set<Tile> adjacentWalkableTiles(LivingEntity target) {
+        int[][] directions = {
+            {0, -1},  // west
+            {0, 1},   // east
+            {1, 0},   // south
+            {-1, 0},  // north
+            {1, -1},  // south-west
+            {1, 1},   // south-east
+            {-1, -1}, // north-west
+            {-1, 1}   // north-east
+        };
+        Set<Tile> adjacentTiles = new HashSet<>();
+        for (int[] dir : directions) {
+            Tile t = worldTileMap.tileAt(target.x() + dir[0], target.y() + dir[1]);
+            if (t.isWalkable()) {
+                adjacentTiles.add(t);
+            }
+        }
+        return adjacentTiles;
+    }
+
+    private boolean isInMeleeRange(LivingEntity a, LivingEntity b) {
+        int dx = Math.abs(a.x() - b.x());
+        int dy = Math.abs(a.y() - b.y());
+        int chebyshev = Math.max(dx, dy);
+        return chebyshev == 1;
+    }
+
+    // --- Action Helpers ---
     private Player getPlayerFromClient(ClientSession client) {
         return clientPlayerMap.get(client).player();
+    }
+
+    private Entity getEntityFromId(int entityId) {
+        return entities.get(entityId);
     }
 
     public void submitAction(PlayerAction action) {
@@ -165,6 +226,8 @@ public final class World {
                     disconnectPlayer(client);
                 case PlayerAction.Walk(ClientSession client, int x, int y) ->
                     setPlayerPath(client, x, y);
+                case PlayerAction.Attack(ClientSession client, int npcId) ->
+                    handleAttackAction(client, npcId);
             }
         }
     }
@@ -285,6 +348,30 @@ public final class World {
                 if (e instanceof Goblin g) {
                     handleNpcDeath(g);
                     break;
+                }
+            }
+        }
+
+        // iterate and apply combat logic for all entities
+        for (Entity e : entities.values()) {
+            if (e instanceof LivingEntity living && living.hasCombatTarget()) {
+                Entity target = entities.get(living.combatTargetId());
+                if (target == null) {
+                    living.clearCombatTarget();
+                    living.clearPath();
+                    continue;
+                }
+                if (!(target instanceof LivingEntity livingTarget)) {
+                    living.clearCombatTarget();
+                    living.clearPath();
+                    continue;
+                }
+
+                // Check if in attack range
+                if (isInMeleeRange(living, livingTarget)) {
+                    living.clearPath();
+                } else {
+                    pathToCombatTarget(living, livingTarget);
                 }
             }
         }

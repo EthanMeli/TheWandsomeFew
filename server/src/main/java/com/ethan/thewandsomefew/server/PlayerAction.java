@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/6/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   This file is responsible for creating Player Actions which
@@ -44,5 +44,9 @@ public sealed interface PlayerAction {
 
     record Walk(ClientSession client, int x, int y) implements PlayerAction {
 
+    }
+
+    record Attack(ClientSession client, int npcId) implements PlayerAction {
+        
     }
 }

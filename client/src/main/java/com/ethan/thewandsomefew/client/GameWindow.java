@@ -14,6 +14,7 @@ package com.ethan.thewandsomefew.client;
 import java.io.IOException;
 
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcInteractPacket;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -141,16 +142,30 @@ public class GameWindow extends Application {
 
         double sx = event.getSceneX();
         double sy = event.getSceneY();
-
         double[] screenToWorld = camera.screenToWorld(sx, sy);
-
         int wx = (int) Math.floor(screenToWorld[0]);
         int wy = (int) Math.floor(screenToWorld[1]);
 
+        // Check if any NPC is on this tile
+        NpcState npcOnTile = findNpcAtTile(wx, wy);
+
         try {
-            network.sendPacket(new ClickToWalkPacket(wx, wy));
+            if (npcOnTile != null) {
+                network.sendPacket(new NpcInteractPacket(npcOnTile.id(), NpcInteractPacket.ACTION_ATTACK));
+            } else {
+                network.sendPacket(new ClickToWalkPacket(wx, wy));
+            }
         } catch (IOException e) {
             System.err.println("Failed to send click: " + e.getMessage());
         }
+    }
+
+    private NpcState findNpcAtTile(int x, int y) {
+        for (NpcState npc : clientState.getNpcs()) {
+            if (npc.x() == x && npc.y() == y) {
+                return npc;
+            }
+        }
+        return null;
     }
 }

@@ -76,40 +76,48 @@ public final class NetworkThread implements Runnable {
             while (running) {
                 Packet packet = codec.readPacket(in);
 
-                if (packet instanceof PlayerPositionPacket playerPosPacket) {
-                    System.out.println("Player " + playerPosPacket.playerId() + " Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
-                    Platform.runLater(() -> {
-                        clientState.updatePlayerPosition(playerPosPacket.playerId(), playerPosPacket.x(), playerPosPacket.y());
-                    });
-                } else if (packet instanceof PlayerJoinPacket join) {
-                    System.out.println("Player " + join.playerId() + " joined at (" + join.x() + ", " + join.y() + ")");
-                    Platform.runLater(() -> {
-                        clientState.addPlayer(join.playerId(), join.x(), join.y());
-                    });
-                } else if (packet instanceof PlayerLeavePacket leave) {
-                    System.out.println("Player " + leave.playerId() + " left");
-                    Platform.runLater(() -> {
-                        clientState.removePlayer(leave.playerId());
-                    });
-                } else if (packet instanceof WelcomePacket welcome) {
-                    System.out.println("Welcome Player Id: " + welcome.playerId());
-                    Platform.runLater(() -> {
-                        clientState.setLocalPlayerId(welcome.playerId());
-                    });
-                } else if (packet instanceof NpcJoinPacket join) {
-                    System.out.println("NPC " + join.npcId() + " (type=" + join.npcType() + ") at (" + join.x() + ", " + join.y() + ")");
-                    Platform.runLater(() -> {
-                        clientState.addNpc(join.npcId(), join.npcType(), join.x(), join.y());
-                    });
-                } else if (packet instanceof NpcPositionPacket position) {
-                    Platform.runLater(() -> {
+                switch (packet) {
+                    case PlayerPositionPacket playerPosPacket -> {
+                        System.out.println("Player " + playerPosPacket.playerId() + " Position Packet Received: x=" + playerPosPacket.x() + " y=" + playerPosPacket.y());
+                        Platform.runLater(() -> {
+                            clientState.updatePlayerPosition(playerPosPacket.playerId(), playerPosPacket.x(), playerPosPacket.y());
+                        });
+                    }
+                    case PlayerJoinPacket join -> {
+                        System.out.println("Player " + join.playerId() + " joined at (" + join.x() + ", " + join.y() + ")");
+                        Platform.runLater(() -> {
+                            clientState.addPlayer(join.playerId(), join.x(), join.y());
+                        });
+                    }
+                    case PlayerLeavePacket leave -> {
+                        System.out.println("Player " + leave.playerId() + " left");
+                        Platform.runLater(() -> {
+                            clientState.removePlayer(leave.playerId());
+                        });
+                    }
+                    case WelcomePacket welcome -> {
+                        System.out.println("Welcome Player Id: " + welcome.playerId());
+                        Platform.runLater(() -> {
+                            clientState.setLocalPlayerId(welcome.playerId());
+                        });
+                    }
+                    case NpcJoinPacket join -> {
+                        System.out.println("NPC " + join.npcId() + " (type=" + join.npcType() + ") at (" + join.x() + ", " + join.y() + ")");
+                        Platform.runLater(() -> {
+                            clientState.addNpc(join.npcId(), join.npcType(), join.x(), join.y());
+                        });
+                    }
+                    case NpcPositionPacket position -> Platform.runLater(() -> {
                         clientState.updateNpcPosition(position.npcId(), position.x(), position.y());
                     });
-                } else if (packet instanceof NpcLeavePacket leave) {
-                    System.out.println("NPC " + leave.npcId() + " left.");
-                    Platform.runLater(() -> {
-                        clientState.removeNpc(leave.npcId());
-                    });
+                    case NpcLeavePacket leave -> {
+                        System.out.println("NPC " + leave.npcId() + " left.");
+                        Platform.runLater(() -> {
+                            clientState.removeNpc(leave.npcId());
+                        });
+                    }
+                    default -> {
+                    }
                 }
             }
         } catch (IOException e) {

@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/18/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for individual
@@ -33,6 +33,7 @@ import com.ethan.thewandsomefew.protocol.Packet;
 import com.ethan.thewandsomefew.protocol.PacketCodec;
 import com.ethan.thewandsomefew.protocol.packets.ClickToWalkPacket;
 import com.ethan.thewandsomefew.protocol.packets.HelloPacket;
+import com.ethan.thewandsomefew.protocol.packets.NpcInteractPacket;
 
 /**
  * The ClientSession class handles the packet exchange between individual
@@ -104,13 +105,31 @@ public final class ClientSession implements Runnable {
         try {
             while (running) {
                 Packet packet = codec.readPacket(in);
-                if (packet instanceof HelloPacket helloPacket) {
-                    System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
-                } else if (packet instanceof ClickToWalkPacket clickToWalkPacket) {
-                    System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
-                    world.submitAction(new PlayerAction.Walk(this, clickToWalkPacket.x(), clickToWalkPacket.y()));
-                } else {
-                    System.out.println("Received Packet Type: " + packet.getClass().getSimpleName());
+                switch (packet) {
+                    case HelloPacket helloPacket -> {
+                        System.out.println("Received HelloPacket: Protocol Version = " + helloPacket.protocolVersion());
+                    } 
+                    case ClickToWalkPacket clickToWalkPacket -> {
+                        System.out.println("Received ClickToWalkPacket: x=" + clickToWalkPacket.x() + " y=" + clickToWalkPacket.y());
+                        world.submitAction(new PlayerAction.Walk(this, clickToWalkPacket.x(), clickToWalkPacket.y()));
+                    }
+                    case NpcInteractPacket npcInteractPacket -> {
+                        System.out.println("Received NPC Interact Packet of Type: " + npcInteractPacket.actionType() + " on NPC Id: " + npcInteractPacket.npcId());
+
+                        switch (npcInteractPacket.actionType()) {
+                            case NpcInteractPacket.ACTION_ATTACK -> {
+                                System.out.println("Attacking");
+                                world.submitAction(new PlayerAction.Attack(this, npcInteractPacket.npcId()));
+                            }
+                            default -> {
+                                System.out.println("Received unknown interact action type: " + npcInteractPacket.actionType());
+                            }
+                        }
+
+                    }
+                    default -> {
+                        System.out.println("Received Packet Type: " + packet.getClass().getSimpleName());
+                    }
                 }
             }
         } catch (IOException e) {
