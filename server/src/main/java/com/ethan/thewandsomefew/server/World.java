@@ -145,6 +145,23 @@ public final class World {
         p.setPath(path);
     }
 
+    private void handlePlayerDeath(Player p) {
+        p.setPosition(0, 0);
+        p.restoreHp(p.maxHp());
+        p.clearCombatTarget();
+        p.clearPath();
+        p.clearAttackTimer();
+
+        for (Entity e : entities.values()) {
+            if (e instanceof LivingEntity living) {
+                if (living.combatTargetId() == p.id()) {
+                    living.clearCombatTarget();
+                }
+            }
+        }
+    }
+
+    // --- Combat ---
     private void handleAttackAction(ClientSession client, int npcId) {
         Player player = getPlayerFromClient(client);
         Entity target = getEntityFromId(npcId);
@@ -184,9 +201,10 @@ public final class World {
         };
         Set<Tile> adjacentTiles = new HashSet<>();
         for (int[] dir : directions) {
-            Tile t = worldTileMap.tileAt(target.x() + dir[0], target.y() + dir[1]);
-            if (t.isWalkable()) {
-                adjacentTiles.add(t);
+            int nx = target.x() + dir[0];
+            int ny = target.y() + dir[1];
+            if (worldTileMap.isWalkable(nx, ny)) {
+                adjacentTiles.add(worldTileMap.tileAt(nx, ny));
             }
         }
         return adjacentTiles;
@@ -389,6 +407,7 @@ public final class World {
                         Tile shuffleTile = pickShuffleTile(attacker);
                         if (shuffleTile != null) {
                             Deque<Tile> shufflePath = new ArrayDeque<>();
+                            shufflePath.add(shuffleTile);
                             attacker.setPath(shufflePath);
                         }
                     } else {
@@ -431,8 +450,7 @@ public final class World {
 
         for (Player p : playersWhoDied) {
             System.out.println("Player " + p.id() + " died.");
-            p.clearCombatTarget();
-            p.clearPath();
+            handlePlayerDeath(p);
         }
 
         // iterate and apply tick movement for all entities

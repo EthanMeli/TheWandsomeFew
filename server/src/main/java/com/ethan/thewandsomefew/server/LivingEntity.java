@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/27/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/28/2026
  *
  * Purpose:
  *   Base class for entities that can move, fight, take damage, and die.
@@ -134,6 +134,10 @@ public abstract class LivingEntity extends Entity {
 
     public void resetAttackTimer() {
         attackTimer = attackSpeed;
+    }
+
+    public void clearAttackTimer() {
+        attackTimer = 0;
     }
 
     public void tickAttackTimer() {
