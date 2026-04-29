@@ -69,6 +69,7 @@ public final class World {
     private final Map<Integer, Entity> entities;
     private final List<PendingRespawn> pendingRespawns;
     private final Random random;
+    private static final int LEASH_RANGE = 8;
 
     public World() {
         actions = new ConcurrentLinkedQueue<>();
@@ -190,14 +191,14 @@ public final class World {
 
     private Set<Tile> adjacentWalkableTiles(LivingEntity target) {
         int[][] directions = {
-            {0, -1},  // west
-            {0, 1},   // east
-            {1, 0},   // south
-            {-1, 0},  // north
-            {1, -1},  // south-west
-            {1, 1},   // south-east
+            {0, -1}, // west
+            {0, 1}, // east
+            {1, 0}, // south
+            {-1, 0}, // north
+            {1, -1}, // south-west
+            {1, 1}, // south-east
             {-1, -1}, // north-west
-            {-1, 1}   // north-east
+            {-1, 1} // north-east
         };
         Set<Tile> adjacentTiles = new HashSet<>();
         for (int[] dir : directions) {
@@ -294,14 +295,16 @@ public final class World {
 
     private Tile pickSpawnTile(NpcType type) {
         List<Tile> spawnPoints = switch (type) {
-            case GOBLIN -> goblinSpawnPoints;
+            case GOBLIN ->
+                goblinSpawnPoints;
         };
         return spawnPoints.get(random.nextInt(spawnPoints.size()));
     }
 
     private Npc createNpc(NpcType type, int npcId, Tile spawnTile) {
         return switch (type) {
-            case GOBLIN -> new Goblin(npcId, spawnTile);
+            case GOBLIN ->
+                new Goblin(npcId, spawnTile);
         };
     }
 
@@ -316,6 +319,22 @@ public final class World {
             points.add(t);
         }
         return points;
+    }
+
+    private boolean isLeashed(Npc npc) {
+        Tile spawn = npc.spawnTile();
+        int dx = Math.abs(npc.x() - spawn.x());
+        int dy = Math.abs(npc.y() - spawn.y());
+        int chebyshev = Math.max(dx, dy);
+        return chebyshev > LEASH_RANGE;
+    }
+
+    private void pathToSpawn(Npc npc) {
+        Tile from = worldTileMap.tileAt(npc.x(), npc.y());
+        Set<Tile> targetTile = new HashSet<>();
+        targetTile.add(npc.spawnTile());
+        Deque<Tile> pathBack = pathFinder.findPath(from, targetTile);
+        npc.setPath(pathBack);
     }
 
     /**
@@ -338,21 +357,22 @@ public final class World {
     }
 
     /**
-     * Picks a tile for an Npc in combat to shuffle to in the instance
-     * that a player is stacked on top of its target
+     * Picks a tile for an Npc in combat to shuffle to in the instance that a
+     * player is stacked on top of its target
+     *
      * @param entity to be moved
      * @return tile for entity to be moved to
      */
     private Tile pickShuffleTile(LivingEntity entity) {
         int[][] directions = {
-            {0, -1},  // west
-            {0, 1},   // east
-            {1, 0},   // south
-            {-1, 0},  // north
-            {1, -1},  // south-west
-            {1, 1},   // south-east
+            {0, -1}, // west
+            {0, 1}, // east
+            {1, 0}, // south
+            {-1, 0}, // north
+            {1, -1}, // south-west
+            {1, 1}, // south-east
             {-1, -1}, // north-west
-            {-1, 1}   // north-east
+            {-1, 1} // north-east
         };
         for (int[] dir : directions) {
             int nx = entity.x() + dir[0];
@@ -400,6 +420,12 @@ public final class World {
                 continue; // re-path loop clears combat target next iteration
             }
 
+            if (attacker instanceof Npc npc && isLeashed(npc)) {
+                npc.clearCombatTarget();
+                pathToSpawn(npc);
+                continue;
+            }
+
             if (!isInMeleeRange(attacker, target)) {
                 if (attacker.x() == target.x() && attacker.y() == target.y()) {
                     // Same tile - shuffle out (NPC only)
@@ -412,8 +438,7 @@ public final class World {
                         }
                     } else if (attacker instanceof Player) {
                         continue; // keep player in place, have NPC shuffle tile
-                    } 
-                    else {
+                    } else {
                         pathToCombatTarget(attacker, target);
                     }
                 } else {
@@ -439,8 +464,10 @@ public final class World {
 
             if (killed) {
                 switch (target) {
-                    case Npc n -> npcsToKill.add(n);
-                    case Player p -> playersWhoDied.add(p);
+                    case Npc n ->
+                        npcsToKill.add(n);
+                    case Player p ->
+                        playersWhoDied.add(p);
                     default -> {
                     }
                 }
