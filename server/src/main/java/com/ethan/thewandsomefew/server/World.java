@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/28/2026
+ * Last Modified: 4/29/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -410,7 +410,10 @@ public final class World {
                             shufflePath.add(shuffleTile);
                             attacker.setPath(shufflePath);
                         }
-                    } else {
+                    } else if (attacker instanceof Player) {
+                        continue; // keep player in place, have NPC shuffle tile
+                    } 
+                    else {
                         pathToCombatTarget(attacker, target);
                     }
                 } else {
