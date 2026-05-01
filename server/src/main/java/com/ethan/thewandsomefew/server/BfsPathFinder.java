@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 4/30/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for path finding
@@ -23,6 +23,7 @@ import java.util.Set;
 public class BfsPathFinder {
 
     private final TileMap worldTileMap;
+    private static final int SEARCH_RADIUS = 64;
 
     public BfsPathFinder(TileMap worldTileMap) {
         this.worldTileMap = worldTileMap;
@@ -48,7 +49,7 @@ public class BfsPathFinder {
             for (int[] dir : directions) {
                 int newX = currentTile.x() + dir[0];
                 int newY = currentTile.y() + dir[1];
-                if (worldTileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap.tileAt(newX, newY))) {
+                if (inSearchRadius(from, newX, newY) && worldTileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap.tileAt(newX, newY))) {
                     neighbors.add(worldTileMap.tileAt(newX, newY));
                     visited.put(worldTileMap.tileAt(newX, newY), currentTile);
                 }
@@ -67,5 +68,9 @@ public class BfsPathFinder {
         }
 
         return path;
+    }
+
+    private boolean inSearchRadius(Tile from, int x, int y) {
+        return Math.abs(from.x() - x) <= SEARCH_RADIUS && Math.abs(from.y() - y) <= SEARCH_RADIUS;
     }
 }
