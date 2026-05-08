@@ -33,7 +33,7 @@ public class BfsPathFinder {
         return Math.abs(from.x() - x) <= SEARCH_RADIUS && Math.abs(from.y() - y) <= SEARCH_RADIUS;
     }
 
-    public ArrayDeque<Tile> findPath(Tile from, Set<Tile> acceptableTargets) {
+    public ArrayDeque<Tile> findPath(Tile from, Set<Tile> acceptableTargets, Tile fallbackCenter) {
         Map<Tile, Tile> visited = new HashMap<>();
         Deque<Tile> queue = new ArrayDeque<>();
         int[][] directions = {
@@ -68,7 +68,43 @@ public class BfsPathFinder {
             }
         }
 
-        return new ArrayDeque<>();
+        if (fallbackCenter == null) {
+            return new ArrayDeque<>();
+        }
+        
+        Tile fallbackGoal = findClosestReachable(fallbackCenter, visited);
+        if (fallbackGoal == null) {
+            return new ArrayDeque<>();
+        }
+
+        return reconstructPath(fallbackGoal, visited);
+    }
+
+    // TODO: Change to find closest reachable with the shortest path from player
+    private Tile findClosestReachable(Tile fallbackCenter, Map<Tile, Tile> visited) {
+        Tile closest = null;
+
+        for (int i = 0; i < 21; i++) {
+            if (closest != null) {
+                System.out.println("Closest: (" + closest.x() + ", " + closest.y() + ")");
+            }
+            for (int j = 0; j < 21; j++) {
+                int wx = i - 10;
+                int wy = j - 10;
+                if (worldTileMap.isWalkable(wx, wy)) {
+                    Tile tile = worldTileMap.tileAt(wx, wy);
+                    if (visited.containsValue(tile) && (closest == null || chebyshev(tile, fallbackCenter) < chebyshev(closest, fallbackCenter))) {
+                        closest = tile;
+                    }
+                }
+            }
+        }
+
+        return closest;
+    }
+
+    private int chebyshev(Tile t1, Tile t2) {
+        return Math.max(Math.abs(t1.x() - t2.x()), Math.abs(t1.y() - t2.y()));
     }
 
     private ArrayDeque<Tile> reconstructPath(Tile goal, Map<Tile, Tile> visited) {

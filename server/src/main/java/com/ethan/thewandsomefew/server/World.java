@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 4/29/2026
+ * Last Modified: 5/7/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -131,18 +131,21 @@ public final class World {
     }
 
     private void setPlayerPath(ClientSession client, int x, int y) {
-        if (!worldTileMap.isWalkable(x, y)) {
-            return;
-        }
-
         Player p = getPlayerFromClient(client);
         Tile from = worldTileMap.tileAt(p.x(), p.y());
+
+        boolean isWalkable = false;
+        if (worldTileMap.isWalkable(x, y)) {
+            isWalkable = true;
+        }
+
+        Tile fallbackCenter = new Tile(x, y, isWalkable);
         Set<Tile> acceptableTargets = new HashSet<>();
-        acceptableTargets.add(worldTileMap.tileAt(x, y));
+        acceptableTargets.add(fallbackCenter);
 
         p.clearCombatTarget();
 
-        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets);
+        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets, fallbackCenter);
         p.setPath(path);
     }
 
@@ -185,7 +188,7 @@ public final class World {
             return;
         }
 
-        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets);
+        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets, null);
         attacker.setPath(path);
     }
 
@@ -333,7 +336,7 @@ public final class World {
         Tile from = worldTileMap.tileAt(npc.x(), npc.y());
         Set<Tile> targetTile = new HashSet<>();
         targetTile.add(npc.spawnTile());
-        Deque<Tile> pathBack = pathFinder.findPath(from, targetTile);
+        Deque<Tile> pathBack = pathFinder.findPath(from, targetTile, null);
         npc.setPath(pathBack);
     }
 
