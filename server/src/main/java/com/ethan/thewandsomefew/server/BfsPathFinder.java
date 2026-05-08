@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/30/2026
+ * Last Modified: 5/7/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for path finding
@@ -29,9 +29,13 @@ public class BfsPathFinder {
         this.worldTileMap = worldTileMap;
     }
 
+    private boolean inSearchRadius(Tile from, int x, int y) {
+        return Math.abs(from.x() - x) <= SEARCH_RADIUS && Math.abs(from.y() - y) <= SEARCH_RADIUS;
+    }
+
     public ArrayDeque<Tile> findPath(Tile from, Set<Tile> acceptableTargets) {
         Map<Tile, Tile> visited = new HashMap<>();
-        Deque<Tile> neighbors = new ArrayDeque<>();
+        Deque<Tile> queue = new ArrayDeque<>();
         int[][] directions = {
             {0, -1},  // west
             {0, 1},   // east
@@ -43,34 +47,39 @@ public class BfsPathFinder {
             {-1, 1}   // north-east
         };
 
-        Tile currentTile = from;
+        queue.add(from);
         visited.put(from, null);
-        while (currentTile != null && !acceptableTargets.contains(currentTile)) {
+
+        while (!queue.isEmpty()) {
+            Tile current = queue.poll();
+
+            if (acceptableTargets.contains(current)) {
+                return reconstructPath(current, visited);
+            }
+
             for (int[] dir : directions) {
-                int newX = currentTile.x() + dir[0];
-                int newY = currentTile.y() + dir[1];
+                int newX = current.x() + dir[0];
+                int newY = current.y() + dir[1];
                 if (inSearchRadius(from, newX, newY) && worldTileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap.tileAt(newX, newY))) {
-                    neighbors.add(worldTileMap.tileAt(newX, newY));
-                    visited.put(worldTileMap.tileAt(newX, newY), currentTile);
+                    Tile neighbor = worldTileMap.tileAt(newX, newY);
+                    queue.add(neighbor);
+                    visited.put(neighbor, current);
                 }
             }
-            currentTile = neighbors.poll();
         }
 
+        return new ArrayDeque<>();
+    }
+
+    private ArrayDeque<Tile> reconstructPath(Tile goal, Map<Tile, Tile> visited) {
         ArrayDeque<Tile> path = new ArrayDeque<>();
-        if (currentTile == null) {
-            return path;
-        }
+        Tile current = goal;
 
-        while (currentTile != from) {
-            path.addFirst(currentTile);
-            currentTile = visited.get(currentTile);
+        while (visited.get(current) != null) {
+            path.addFirst(current);
+            current = visited.get(current);
         }
 
         return path;
-    }
-
-    private boolean inSearchRadius(Tile from, int x, int y) {
-        return Math.abs(from.x() - x) <= SEARCH_RADIUS && Math.abs(from.y() - y) <= SEARCH_RADIUS;
     }
 }
