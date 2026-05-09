@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 5/7/2026
+ * Last Modified: 5/8/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for path finding
@@ -80,27 +80,44 @@ public class BfsPathFinder {
         return reconstructPath(fallbackGoal, visited);
     }
 
-    // TODO: Change to find closest reachable with the shortest path from player
+    /**
+     * @param fallbackCenter
+     * @param visited
+     * 
+     * Scans a 21x21 grid around the clicked tile (fallbackCenter). Calculates
+     * the chebyshev distance for each tile in 21x21 grid with the fallbackCenter.
+     * Minimizes the chebyshev distance as the primary goal, resolves tie breaks
+     * by finding the tile with the shortest path from the player's current position.
+     * 
+     * @return closest reachable tile with the shortest path
+     */
     private Tile findClosestReachable(Tile fallbackCenter, Map<Tile, Tile> visited) {
-        Tile closest = null;
+        Tile best = null;
+        int bestChebyshev = Integer.MAX_VALUE;
+        int bestPathLength = Integer.MAX_VALUE;
 
         for (int i = 0; i < 21; i++) {
-            if (closest != null) {
-                System.out.println("Closest: (" + closest.x() + ", " + closest.y() + ")");
-            }
             for (int j = 0; j < 21; j++) {
-                int wx = i - 10;
-                int wy = j - 10;
-                if (worldTileMap.isWalkable(wx, wy)) {
-                    Tile tile = worldTileMap.tileAt(wx, wy);
-                    if (visited.containsValue(tile) && (closest == null || chebyshev(tile, fallbackCenter) < chebyshev(closest, fallbackCenter))) {
-                        closest = tile;
-                    }
+                int wx = fallbackCenter.x() + (i - 10);
+                int wy = fallbackCenter.y() + (j - 10);
+
+                if (!worldTileMap.inBounds(wx, wy)) continue;
+                Tile candidate = worldTileMap.tileAt(wx, wy);
+                if (!visited.containsKey(candidate)) continue;
+
+                int chebyshev = chebyshev(candidate, fallbackCenter);
+                if (chebyshev > bestChebyshev) continue;
+
+                int pathLen = pathLengthFromVisited(candidate, visited);
+                if (chebyshev < bestChebyshev || (chebyshev == bestChebyshev && pathLen < bestPathLength)) {
+                    best = candidate;
+                    bestChebyshev = chebyshev;
+                    bestPathLength = pathLen;
                 }
             }
         }
 
-        return closest;
+        return best;
     }
 
     private int chebyshev(Tile t1, Tile t2) {
@@ -117,5 +134,15 @@ public class BfsPathFinder {
         }
 
         return path;
+    }
+
+    private int pathLengthFromVisited(Tile tile, Map<Tile, Tile> visited) {
+        int length = 0;
+        Tile current = tile;
+        while (visited.get(current) != null) {
+            length++;
+            current = visited.get(current);
+        }
+        return length;
     }
 }

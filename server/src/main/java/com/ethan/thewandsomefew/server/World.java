@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 3/8/2026
- * Last Modified: 5/7/2026
+ * Last Modified: 5/8/2026
  *
  * Purpose:
  *   This file is responsible for defining the World state, and performing
@@ -139,13 +139,13 @@ public final class World {
             isWalkable = true;
         }
 
-        Tile fallbackCenter = new Tile(x, y, isWalkable);
+        Tile clickedTile = new Tile(x, y, isWalkable);
         Set<Tile> acceptableTargets = new HashSet<>();
-        acceptableTargets.add(fallbackCenter);
+        acceptableTargets.add(clickedTile);
 
         p.clearCombatTarget();
 
-        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets, fallbackCenter);
+        Deque<Tile> path = pathFinder.findPath(from, acceptableTargets, clickedTile);
         p.setPath(path);
     }
 
