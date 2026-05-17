@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 5/8/2026
+ * Last Modified: 5/17/2026
  *
  * Purpose:
  *   This file is responsible for defining the logic for path finding
@@ -61,6 +61,13 @@ public class BfsPathFinder {
                 int newX = current.x() + dir[0];
                 int newY = current.y() + dir[1];
                 if (inSearchRadius(from, newX, newY) && worldTileMap.isWalkable(newX, newY) && !visited.containsKey(worldTileMap.tileAt(newX, newY))) {
+                    
+                    // Tile is in the diagonal direction
+                    if (dir[0] != 0 && dir[1] != 0) {
+                        if (isDiagonalBlocked(current, dir[0], dir[1])) {
+                            continue;
+                        }
+                    }
                     Tile neighbor = worldTileMap.tileAt(newX, newY);
                     queue.add(neighbor);
                     visited.put(neighbor, current);
@@ -78,6 +85,18 @@ public class BfsPathFinder {
         }
 
         return reconstructPath(fallbackGoal, visited);
+    }
+
+    /**
+     * @param current
+     * @param dx
+     * @param dy
+     * 
+     * @return true if the diagonal direction a player attempts to move in
+     * is blocked by a wall in either of its cardinal directions
+     */
+    private boolean isDiagonalBlocked(Tile current, int dx, int dy) {
+        return !worldTileMap.isWalkable(current.x() + dx, current.y()) || !worldTileMap.isWalkable(current.x(), current.y() + dy);
     }
 
     /**

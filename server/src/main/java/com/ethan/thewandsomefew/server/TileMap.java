@@ -3,7 +3,7 @@
  * Module: server
  * Authored By: Ethan Meli
  * Created: 4/18/2026
- * Last Modified: 4/27/2026
+ * Last Modified: 5/17/2026
  *
  * Purpose:
  *   Store the map of tiles for the World
@@ -64,6 +64,10 @@ public class TileMap {
         // Doorway to test player navigation through tight space
         testMap[2][1] = new Tile(2, 1, false);
         testMap[2][3] = new Tile(2, 3, false);
+
+        // Diagonal walls
+        testMap[7][2] = new Tile(7, 2, false);
+        testMap[8][3] = new Tile(8, 3, false);
 
         // Wall that is unpassable
         for (int y = 0; y < HEIGHT; y++) {
